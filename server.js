@@ -9,11 +9,11 @@ const mongoose= require('mongoose')
 mongoose.connect(process.env.DATABASE_URL,{ useNewUrlParser: true })
 const db= mongoose.connection
 db.on( 'error',(error)=> console.error(error))
-db.once('open',()=>console.log('conectado'))
+db.once('open',()=>console.log('conectado a MongoDb'))
 /*FIN CONECCION A MONGO*/
 
 
-/*USAR JSON */
+/*USE JSON */
 app.use(express.json())
 
 
@@ -22,9 +22,10 @@ app.use(express.json())
 
 
 /*RUTEO API*/
-const panruters=require('./routes/pan') 
-app.use('/pan',panruters)
+const panRuta=require('./routes/pan') 
+app.use('/pan',panRuta)
 /*FIN RUTEO API*/
 
+const port=6454
 
-app.listen(6454,()=> console.log('corre looool'))
+app.listen(port,()=> console.log('corre en puerto '+port))

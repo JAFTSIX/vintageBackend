@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const pan = require('../entidades/pan')
+
 const bs = require('../BussinesLogic/pan')
 
 //get all
@@ -52,25 +52,6 @@ router.delete('/:id', (req, res, next) => {
    bs.deletee(req, res)
 
 })
-
-
-async function getpan(req, res, next) {
-    let panini
-    try {
-        panini = await pan.findById(req.params.id)
-        if (panini == null) {
-            return res.status(404).json({
-                message: 'no se encontro ese id'
-            })
-        }
-    } catch (error) {
-        res.status(500).json({
-            message: err.message
-        })
-    }
-    res.panini = panini
-    next()
-}
 
 
 module.exports = router
