@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router()
 const pan = require('../entidades/pan')
-const bs = require('../DataAccesLayer/repository')
+const bs = require('../BussinesLogic/pan')
 
 //get all
 //http://localhost:6454/pan
 router.get('/', async (req, res) => {
-    bs.getall(req, res, 'objeto')
+    bs.getall(req, res)
 })
 
 
@@ -16,11 +16,11 @@ router.get('/', async (req, res) => {
 
 router.get('/:id',
     (req, res, next) => {
-        bs.getpan(req, res, next, 'objeto')
+        
+        bs.getbyID(req, res, next, 'objeto')
     }, (req, res) => {
-        res.send(res.queryResult.nombre)
+        res.send(res.queryResult)
     })
-
 
 
 
@@ -28,55 +28,31 @@ router.get('/:id',
 //insert
 //http://localhost:6454/pan
 router.post('/', async (req, res) => {
-    const recienhorneado = new pan({
-        nombre: req.body.nombre,
-        largo: req.body.largo
-    })
-
-    try {
-        const pancitogurdado = await recienhorneado.save()
-        res.status(201).json(pancitogurdado)
-    } catch (err) {
-        res.status(400).json({
-            message: err.message
-        })
-    }
-
+    bs.insert(req,res)
 })
 
 
 //update
-router.patch('/:id', getpan, async (req, res) => {
-    if (req.body.nombre != null) {
-        res.panini.nombre = req.body.nombre
-    }
-    if (req.body.largo != null) {
-        res.panini.largo = req.body.largo
-    }
-    try {
-        const panelo = await res.panini.save()
-
-        res.status(200).json(panelo)
-    } catch (error) {
-        res.status(500).json({
-            message: err.message
-        })
-    }
+router.patch('/:id', (req, res, next) => {
+        
+    bs.getbyID(req, res, next, 'objeto')
+}, async (req, res) => {
+    bs.update(req, res)
+    
 })
+
+
+
 //delete
-router.delete('/:id', getpan, (req, res) => {
-    try {
-        res.panini.remove()
-        res.status(200).json({
-            message: 'pan eliminado'
-        })
-    } catch (error) {
-        res.status(500).json({
-            message: err.message
-        })
-    }
+router.delete('/:id', (req, res, next) => {
+        
+    bs.getbyID(req, res, next, 'objeto')
+},
+   (req, res) => {
+   bs.deletee(req, res)
 
 })
+
 
 async function getpan(req, res, next) {
     let panini
