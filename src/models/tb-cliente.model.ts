@@ -48,8 +48,9 @@ export class TbCliente extends Entity {
   @property({
     type: 'array',
     itemType: 'string',
+    required: true,
   })
-  aFavoritos?: string[];
+  aFavoritos: string[];
 
   @property({
     type: 'string',

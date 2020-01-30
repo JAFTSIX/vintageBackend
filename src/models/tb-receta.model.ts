@@ -52,6 +52,13 @@ export class TbReceta extends Entity {
   })
   sUrlImagen: string;
 
+  @property({
+    type: 'boolean',
+    required: true,
+    default: true,
+  })
+  bActivo: boolean;
+
 
   constructor(data?: Partial<TbReceta>) {
     super(data);

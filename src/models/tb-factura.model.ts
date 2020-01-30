@@ -23,10 +23,10 @@ export class TbFactura extends Entity {
 
   @property({
     type: 'array',
-    itemType: 'string',
+    itemType: 'object',
     required: true,
   })
-  aCompras: string[];
+  aCompras: object[];
 
   @property({
     type: 'number',
@@ -41,10 +41,16 @@ export class TbFactura extends Entity {
   iTotal: number;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: true,
   })
-  sDireccion: string;
+  oDireccion: object;
+
+  @property({
+    type: 'boolean',
+    required: true,
+  })
+  bPendiente: boolean;
 
 
   constructor(data?: Partial<TbFactura>) {

@@ -33,6 +33,12 @@ export class TbArticulo extends Entity {
   })
   sDescripcion: string;
 
+  @property({
+    type: 'boolean',
+    required: true,
+  })
+  bActivo: boolean;
+
 
   constructor(data?: Partial<TbArticulo>) {
     super(data);
