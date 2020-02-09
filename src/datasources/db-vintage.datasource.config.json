@@ -1,11 +1,11 @@
 {
   "name": "DBVintage",
   "connector": "mongodb",
-  "url": "mongodb://localhost:27017/DBVintage",
-  "host": "localhost",
+  "url": "mongodb://Admin:NOWcOoSqPrwxQ6LG@dbvintage-shard-00-00-v9ve1.mongodb.net:27017,dbvintage-shard-00-02-v9ve1.mongodb.net:27017/test?ssl=true&replicaSet=DBVintage-shard-0&authSource=admin&retryWrites=true&w=majority",
+  "host": "dbvintage-shard-00-00-v9ve1.mongodb.net",
   "port": 27017,
-  "user": "",
-  "password": "",
+  "user": "Admin",
+  "password": "NOWcOoSqPrwxQ6LG",
   "database": "DBVintage",
   "useNewUrlParser": true
 }
