@@ -18,6 +18,7 @@ export class TbArticulo extends Entity {
   @property({
     type: 'number',
     required: true,
+    default: 0,
   })
   iCant: number;
 
@@ -34,8 +35,15 @@ export class TbArticulo extends Entity {
   sDescripcion: string;
 
   @property({
+    type: 'string',
+    required: true,
+  })
+  sUrlImagen: string;
+
+  @property({
     type: 'boolean',
     required: true,
+    default: 0,
   })
   bActivo: boolean;
 

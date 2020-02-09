@@ -1,7 +1,7 @@
 import {Entity, model, property} from '@loopback/repository';
 
 @model()
-export class TbCliente extends Entity {
+export class TbAdmin extends Entity {
   @property({
     type: 'string',
     id: true,
@@ -33,37 +33,14 @@ export class TbCliente extends Entity {
   })
   sContrasena: string;
 
-  @property({
-    type: 'date',
-    required: true,
-  })
-  dNacimiento: string;
 
-  @property({
-    type: 'array',
-    itemType: 'string',
-  })
-  aRecetas?: string[];
-
-  @property({
-    type: 'array',
-    itemType: 'string',
-  })
-  aFavoritos?: string[];
-
-  @property({
-    type: 'string',
-  })
-  sDireccion?: string;
-
-
-  constructor(data?: Partial<TbCliente>) {
+  constructor(data?: Partial<TbAdmin>) {
     super(data);
   }
 }
 
-export interface TbClienteRelations {
+export interface TbAdminRelations {
   // describe navigational properties here
 }
 
-export type TbClienteWithRelations = TbCliente & TbClienteRelations;
+export type TbAdminWithRelations = TbAdmin & TbAdminRelations;
