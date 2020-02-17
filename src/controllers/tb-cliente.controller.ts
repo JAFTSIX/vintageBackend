@@ -16,21 +16,25 @@ import {
   put,
   del,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
-import {TbCliente} from '../models';
-import {TbClienteRepository} from '../repositories';
+import { TbCliente } from '../models';
+import { TbClienteRepository } from '../repositories';
+import { rejects } from 'assert';
 
 export class TbClienteController {
   constructor(
     @repository(TbClienteRepository)
-    public tbClienteRepository : TbClienteRepository,
-  ) {}
+    public tbClienteRepository: TbClienteRepository,
+  ) { }
+
+
 
   @post('/Cliente', {
     responses: {
       '200': {
         description: 'TbCliente model instance',
-        content: {'application/json': {schema: getModelSchemaRef(TbCliente)}},
+        content: { 'application/json': { schema: getModelSchemaRef(TbCliente) } },
       },
     },
   })
@@ -47,14 +51,18 @@ export class TbClienteController {
     })
     tbCliente: Omit<TbCliente, '_id'>,
   ): Promise<TbCliente> {
+
+     /*validadciones aca*/
+      throw new HttpErrors.UnprocessableEntity("mamada");
     return this.tbClienteRepository.create(tbCliente);
+
   }
 
   @get('/Cliente/count', {
     responses: {
       '200': {
         description: 'TbCliente model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -72,7 +80,7 @@ export class TbClienteController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(TbCliente, {includeRelations: true}),
+              items: getModelSchemaRef(TbCliente, { includeRelations: true }),
             },
           },
         },
@@ -82,14 +90,17 @@ export class TbClienteController {
   async find(
     @param.query.object('filter', getFilterSchemaFor(TbCliente)) filter?: Filter<TbCliente>,
   ): Promise<TbCliente[]> {
-    return this.tbClienteRepository.find(filter);
+
+    //throw new HttpErrors.UnprocessableEntity("mamada");
+    var x = this.tbClienteRepository.find(filter);
+    return x;
   }
 
   @patch('/Cliente', {
     responses: {
       '200': {
         description: 'TbCliente PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -97,7 +108,7 @@ export class TbClienteController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbCliente, {partial: true}),
+          schema: getModelSchemaRef(TbCliente, { partial: true }),
         },
       },
     })
@@ -113,7 +124,7 @@ export class TbClienteController {
         description: 'TbCliente model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbCliente, {includeRelations: true}),
+            schema: getModelSchemaRef(TbCliente, { includeRelations: true }),
           },
         },
       },
@@ -138,7 +149,7 @@ export class TbClienteController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbCliente, {partial: true}),
+          schema: getModelSchemaRef(TbCliente, { partial: true }),
         },
       },
     })
