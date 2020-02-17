@@ -46,12 +46,6 @@ export class TbFactura extends Entity {
   })
   oDireccion: object;
 
-  @property({
-    type: 'boolean',
-    required: true,
-  })
-  bPendiente: boolean;
-
 
   constructor(data?: Partial<TbFactura>) {
     super(data);

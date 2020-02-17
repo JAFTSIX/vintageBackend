@@ -25,13 +25,13 @@ export class TbCliente extends Entity {
     type: 'string',
     required: true,
   })
-  sCorreo: string;
+  sContrasena: string;
 
   @property({
     type: 'string',
     required: true,
   })
-  sContrasena: string;
+  sCorreo: string;
 
   @property({
     type: 'date',
@@ -52,9 +52,14 @@ export class TbCliente extends Entity {
   aFavoritos?: string[];
 
   @property({
-    type: 'string',
+    type: 'object',
   })
-  sDireccion?: string;
+  oDireccion?: object;
+
+  @property({
+    type: 'boolean',
+  })
+  bActivo?: boolean;
 
 
   constructor(data?: Partial<TbCliente>) {

@@ -1,4 +1,4 @@
-import {CocinaVintageApplication} from '../..';
+import {VintageBackendApp} from '../..';
 import {
   createRestAppClient,
   givenHttpServerConfig,
@@ -14,7 +14,7 @@ export async function setupApplication(): Promise<AppWithClient> {
     // port: +process.env.PORT,
   });
 
-  const app = new CocinaVintageApplication({
+  const app = new VintageBackendApp({
     rest: restConfig,
   });
 
@@ -27,6 +27,6 @@ export async function setupApplication(): Promise<AppWithClient> {
 }
 
 export interface AppWithClient {
-  app: CocinaVintageApplication;
+  app: VintageBackendApp;
   client: Client;
 }

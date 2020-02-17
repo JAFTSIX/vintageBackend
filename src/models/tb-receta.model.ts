@@ -55,7 +55,7 @@ export class TbReceta extends Entity {
   @property({
     type: 'boolean',
     required: true,
-    default: true,
+    default: 1,
   })
   bActivo: boolean;
 

@@ -10,7 +10,7 @@ import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
 
-export class CocinaVintageApplication extends BootMixin(
+export class VintageBackendApp extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
 ) {
   constructor(options: ApplicationConfig = {}) {

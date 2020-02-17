@@ -1,10 +1,10 @@
-import {CocinaVintageApplication} from './application';
+import {VintageBackendApp} from './application';
 import {ApplicationConfig} from '@loopback/core';
 
-export {CocinaVintageApplication};
+export {VintageBackendApp};
 
 export async function main(options: ApplicationConfig = {}) {
-  const app = new CocinaVintageApplication(options);
+  const app = new VintageBackendApp(options);
   await app.boot();
   await app.start();
 

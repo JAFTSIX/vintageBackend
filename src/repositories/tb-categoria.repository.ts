@@ -5,7 +5,7 @@ import {inject} from '@loopback/core';
 
 export class TbCategoriaRepository extends DefaultCrudRepository<
   TbCategoria,
-  typeof TbCategoria.prototype._id,
+  typeof TbCategoria.prototype.sNombre,
   TbCategoriaRelations
 > {
   constructor(

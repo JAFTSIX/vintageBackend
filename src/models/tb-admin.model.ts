@@ -25,13 +25,19 @@ export class TbAdmin extends Entity {
     type: 'string',
     required: true,
   })
-  sCorreo: string;
+  sContrasena: string;
 
   @property({
     type: 'string',
     required: true,
   })
-  sContrasena: string;
+  sCorreo: string;
+
+  @property({
+    type: 'boolean',
+    default: 1,
+  })
+  bActivo?: boolean;
 
 
   constructor(data?: Partial<TbAdmin>) {
