@@ -24,6 +24,7 @@ import { TbClienteRepository } from '../repositories';
 //#region Mis imports
 
 import Validar = require('../Procesos/validar');
+import debug from 'debug';
 
 
 //#endregion
@@ -59,6 +60,19 @@ export class TbClienteController {
     const verificar = await Validar.isFine(tbCliente)
     if (!verificar.valido) {
       throw new HttpErrors.UnprocessableEntity(verificar.incidente);
+    }
+
+
+
+
+    var pep = await this.tbClienteRepository.find({
+      where: {
+        sCorreo: '' + tbCliente.sCorreo
+      }
+    });
+
+    if (pep.length > 0) {
+      throw new HttpErrors.UnprocessableEntity('exito');
     }
     tbCliente.bActivo = true;
     return this.tbClienteRepository.create(tbCliente);
@@ -100,6 +114,8 @@ export class TbClienteController {
   ): Promise<TbCliente[]> {
 
     return this.tbClienteRepository.find(filter);
+
+
   }
 
   @patch('/Cliente', {

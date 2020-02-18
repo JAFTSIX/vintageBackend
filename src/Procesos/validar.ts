@@ -23,6 +23,7 @@ class resultado {
   }
 }
 
+
 async function No_Vacio(objeto: TbCliente): Promise<resultado> {
   var respuesta = new resultado(true, 'todo bien')
 
@@ -63,7 +64,6 @@ async function checking(objeto: TbCliente): Promise<resultado> {
   if (!respuesta.valido) {
     return respuesta;
   }
-
 
 
   return respuesta;
