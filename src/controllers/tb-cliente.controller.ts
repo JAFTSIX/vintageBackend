@@ -38,8 +38,8 @@ export class TbClienteController {
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
     @inject('service.hasher')
-    public hasher: BcyptHasher
-    ,
+    public hasher: BcyptHasher,
+
   ) { }
 
   @post('/Cliente', {

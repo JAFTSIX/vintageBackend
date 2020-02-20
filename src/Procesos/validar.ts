@@ -5,7 +5,7 @@ import { TbClienteRepository } from '../repositories';
 //#region Expresiones regulares
 
 
-const regexsNombre_Apellido = /^[A-z]{1,60}$/
+const regexsNombre_Apellido = /^[a-zA-ZÀ-ÿ\u00f1\u00d1]{1,60}$/
 
 /*La contraseña debe tener al entre 8 y 16 caracteres, al menos un dígito, al menos una minúscula y al menos una mayúscula.
 NO puede tener otros símbolos. */

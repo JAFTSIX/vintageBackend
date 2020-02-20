@@ -17,6 +17,7 @@ export class VintageBackendApp extends BootMixin(
   constructor(options: ApplicationConfig = {}) {
     super(options);
 
+    this.setupBinding();
     // Set up the custom sequence
     this.sequence(MySequence);
 
@@ -40,6 +41,7 @@ export class VintageBackendApp extends BootMixin(
       },
     };
   }
+
   setupBinding(): void {
     this.bind('service.hasher').toClass(BcyptHasher);
     this.bind('rounds').to(10);
