@@ -18,6 +18,8 @@ import {
   requestBody,
   HttpErrors,
 } from '@loopback/rest';
+import { inject } from '@loopback/core';
+
 import { TbCliente } from '../models';
 import { TbClienteRepository } from '../repositories';
 
@@ -26,6 +28,8 @@ import { TbClienteRepository } from '../repositories';
 import Validar = require('../Procesos/validar');
 import debug from 'debug';
 
+import { BcyptHasher } from '../Procesos/hash.password.bcrypt';
+
 
 //#endregion
 
@@ -33,6 +37,9 @@ export class TbClienteController {
   constructor(
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
+    @inject('service.hasher')
+    public hasher: BcyptHasher
+    ,
   ) { }
 
   @post('/Cliente', {
@@ -58,24 +65,18 @@ export class TbClienteController {
   ): Promise<TbCliente> {
 
     const verificar = await Validar.isFine(tbCliente)
-    if (!verificar.valido) {
-      throw new HttpErrors.UnprocessableEntity(verificar.incidente);
-    }
+    if (!verificar.valido) throw new HttpErrors.UnprocessableEntity(verificar.incidente)
 
 
+    if ((await this.findbyCorreo(tbCliente.sCorreo)).length > 0) throw new HttpErrors.UnprocessableEntity('Ese correo ya existe')
 
+    //esLint-disable-next-line require-atomic-updates
+    tbCliente.sContrasena = await this.hasher.hashPassword(tbCliente.sContrasena)
 
-    var pep = await this.tbClienteRepository.find({
-      where: {
-        sCorreo: '' + tbCliente.sCorreo
-      }
-    });
-
-    if (pep.length > 0) {
-      throw new HttpErrors.UnprocessableEntity('exito');
-    }
-    tbCliente.bActivo = true;
-    return this.tbClienteRepository.create(tbCliente);
+    tbCliente.bActivo = true
+    const saved = await this.tbClienteRepository.create(tbCliente)
+    delete saved.sContrasena
+    return saved
   }
 
   @get('/Cliente/count', {
@@ -204,5 +205,13 @@ export class TbClienteController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.tbClienteRepository.deleteById(id);
+  }
+
+  async findbyCorreo(correo: string): Promise<TbCliente[]> {
+    return await this.tbClienteRepository.find({
+      where: {
+        sCorreo: '' + correo
+      }
+    });
   }
 }
