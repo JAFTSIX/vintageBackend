@@ -1,15 +1,16 @@
-import { BootMixin } from '@loopback/boot';
-import { ApplicationConfig } from '@loopback/core';
+import {BootMixin} from '@loopback/boot';
+import {ApplicationConfig} from '@loopback/core';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
-import { RepositoryMixin } from '@loopback/repository';
-import { RestApplication } from '@loopback/rest';
-import { ServiceMixin } from '@loopback/service-proxy';
+import {RepositoryMixin} from '@loopback/repository';
+import {RestApplication} from '@loopback/rest';
+import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
-import { MySequence } from './sequence';
-import { BcyptHasher } from './Procesos/hash.password.bcrypt';
+import {MySequence} from './sequence';
+import {BcyptHasher} from './Procesos/hash.password.bcrypt';
+import {MyClientService} from './Procesos/client-service';
 
 export class VintageBackendApp extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -45,5 +46,6 @@ export class VintageBackendApp extends BootMixin(
   setupBinding(): void {
     this.bind('service.hasher').toClass(BcyptHasher);
     this.bind('rounds').to(10);
+    this.bind('services.client.services').toClass(MyClientService);
   }
 }
