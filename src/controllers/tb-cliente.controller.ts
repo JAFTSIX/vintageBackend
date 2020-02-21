@@ -239,7 +239,8 @@ export class TbClienteController {
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
   ): Promise<{token: string}> {
-    await this.clientService.verifyCredentials(credentials);
+    const cliente = await this.clientService.verifyCredentials(credentials);
+    console.log(cliente);
     return Promise.resolve({token: 'd2352345fsdgfdhd'});
   }
 }

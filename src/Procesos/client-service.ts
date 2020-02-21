@@ -1,24 +1,41 @@
 import {UserService} from '@loopback/authentication';
-import {Credentials} from '../repositories/tb-cliente.repository';
+import {UserProfile} from '@loopback/security';
+import {
+  Credentials,
+  TbClienteRepository,
+} from '../repositories/tb-cliente.repository';
 import {TbCliente} from '../models';
+import {repository} from '@loopback/repository';
+import {HttpErrors} from '@loopback/rest';
+import {BcyptHasher} from './hash.password.bcrypt';
+import {inject} from '@loopback/core';
 
 export class MyClientService implements UserService<TbCliente, Credentials> {
-  verifyCredentials(credentials: Credentials): Promise<TbCliente> {
-    throw new Error('Method not implemented.');
+  constructor(
+    @repository(TbClienteRepository)
+    public tbClienteRepository: TbClienteRepository,
+    @inject('service.hasher')
+    public hasher: BcyptHasher,
+  ) {}
+  async verifyCredentials(credentials: Credentials): Promise<TbCliente> {
+    const foundUser = await this.tbClienteRepository.findOne({
+      where: {
+        sCorreo: credentials.email,
+      },
+    });
+    if (!foundUser) {
+      throw new HttpErrors.NotFound('El usuario no existe');
+    }
+    const passwordMatch = await this.hasher.comparePassword(
+      credentials.password,
+      foundUser.sContrasena,
+    );
+    if (!passwordMatch) {
+      throw new HttpErrors.Unauthorized('Contraseña incorrecta');
+    }
+    return foundUser;
   }
-  convertToUserProfile(
-    user: TbCliente,
-  ): import('@loopback/security').UserProfile {
+  convertToUserProfile(user: TbCliente): UserProfile {
     throw new Error('Method not implemented.');
   }
 }
-
-/*verifyCredentials(credentials: Credentials): Promise<TbCliente> {
-  throw new Error('Method not implemented.');
-}
-convertToUserProfile(
-  client: TbCliente,
-): import('@loopback/authentication').UserProfile {
-  throw new Error('Method not implemented.');
-}*/
-//Como dato curioso, lo comentado arriba no funciona, pero si lo autogenero todo va de puta madre........... xD
