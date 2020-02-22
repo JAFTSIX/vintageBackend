@@ -11,6 +11,7 @@ import path from 'path';
 import {MySequence} from './sequence';
 import {BcyptHasher} from './Procesos/hash.password.bcrypt';
 import {MyClientService} from './Procesos/client-service';
+import {JwtService} from './Procesos/jwt-service';
 
 export class VintageBackendApp extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -47,5 +48,6 @@ export class VintageBackendApp extends BootMixin(
     this.bind('service.hasher').toClass(BcyptHasher);
     this.bind('rounds').to(10);
     this.bind('services.client.services').toClass(MyClientService);
+    this.bind('services.jwt.service').toClass(JwtService);
   }
 }

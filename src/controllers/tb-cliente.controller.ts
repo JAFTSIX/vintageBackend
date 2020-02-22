@@ -31,6 +31,7 @@ import debug from 'debug';
 import {BcyptHasher} from '../Procesos/hash.password.bcrypt';
 import {MyClientService} from '../Procesos/client-service';
 import {CredentialsRequestBody} from './specs/client.controller.spec';
+import {JwtService} from '../Procesos/jwt-service';
 
 //#endregion
 
@@ -42,6 +43,8 @@ export class TbClienteController {
     public hasher: BcyptHasher,
     @inject('services.client.services')
     public clientService: MyClientService,
+    @inject('services.jwt.service')
+    public jwtService: JwtService,
   ) {}
 
   @post('/Cliente', {
@@ -241,6 +244,10 @@ export class TbClienteController {
   ): Promise<{token: string}> {
     const cliente = await this.clientService.verifyCredentials(credentials);
     console.log(cliente);
-    return Promise.resolve({token: 'd2352345fsdgfdhd'});
+    const UserProfile = await this.clientService.convertToUserProfile(cliente);
+    console.log(UserProfile);
+
+    const token = await this.jwtService.generateToken(UserProfile);
+    return Promise.resolve({token});
   }
 }

@@ -1,5 +1,5 @@
 import {UserService} from '@loopback/authentication';
-import {UserProfile} from '@loopback/security';
+import {UserProfile, securityId} from '@loopback/security';
 import {
   Credentials,
   TbClienteRepository,
@@ -36,6 +36,10 @@ export class MyClientService implements UserService<TbCliente, Credentials> {
     return foundUser;
   }
   convertToUserProfile(user: TbCliente): UserProfile {
-    throw new Error('Method not implemented.');
+    return {
+      [securityId]: user._id + '',
+      email: user.sCorreo,
+      name: user.sNombre,
+    };
   }
 }
