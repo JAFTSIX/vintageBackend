@@ -49,5 +49,7 @@ export class VintageBackendApp extends BootMixin(
     this.bind('rounds').to(10);
     this.bind('services.client.services').toClass(MyClientService);
     this.bind('services.jwt.service').toClass(JwtService);
+    this.bind('Authentication.jwt.secret').to('contra');
+    this.bind('Authentication.jwt.expiresIn').to('6h');
   }
 }
