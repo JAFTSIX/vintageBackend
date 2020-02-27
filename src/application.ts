@@ -12,6 +12,12 @@ import {MySequence} from './sequence';
 import {BcyptHasher} from './Procesos/hash.password.bcrypt';
 import {MyClientService} from './Procesos/client-service';
 import {JwtService} from './Procesos/jwt-service';
+import {
+  TokenServiceConstant,
+  TokenServiceBindings,
+  PasswordHasherBindings,
+  UserServiceBindings,
+} from './keys';
 
 export class VintageBackendApp extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -45,11 +51,15 @@ export class VintageBackendApp extends BootMixin(
   }
 
   setupBinding(): void {
-    this.bind('service.hasher').toClass(BcyptHasher);
-    this.bind('rounds').to(10);
-    this.bind('services.client.services').toClass(MyClientService);
-    this.bind('services.jwt.service').toClass(JwtService);
-    this.bind('Authentication.jwt.secret').to('contra');
-    this.bind('Authentication.jwt.expiresIn').to('6h');
+    this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcyptHasher);
+    this.bind(PasswordHasherBindings.ROUNDS).to(10);
+    this.bind(UserServiceBindings.USER_SERVICE).toClass(MyClientService);
+    this.bind(TokenServiceBindings.TOKEN_SERVICE).toClass(JwtService);
+    this.bind(TokenServiceBindings.TOKEN_SECRET).to(
+      TokenServiceConstant.TOKEN_SECRET_VALUE,
+    );
+    this.bind(TokenServiceBindings.TOKEN_EXPIRES_IN).to(
+      TokenServiceConstant.TOKEN_EXPIRES_IN_VALUE,
+    );
   }
 }

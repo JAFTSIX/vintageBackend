@@ -9,12 +9,13 @@ import {repository} from '@loopback/repository';
 import {HttpErrors} from '@loopback/rest';
 import {BcyptHasher} from './hash.password.bcrypt';
 import {inject} from '@loopback/core';
+import {PasswordHasherBindings} from '../keys';
 
 export class MyClientService implements UserService<TbCliente, Credentials> {
   constructor(
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
-    @inject('service.hasher')
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public hasher: BcyptHasher,
   ) {}
   async verifyCredentials(credentials: Credentials): Promise<TbCliente> {

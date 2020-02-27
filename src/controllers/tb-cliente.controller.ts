@@ -22,6 +22,7 @@ import {inject} from '@loopback/core';
 
 import {TbCliente} from '../models';
 import {TbClienteRepository, Credentials} from '../repositories';
+import {securityId} from '@loopback/security';
 
 //#region Mis imports
 
@@ -32,6 +33,12 @@ import {BcyptHasher} from '../Procesos/hash.password.bcrypt';
 import {MyClientService} from '../Procesos/client-service';
 import {CredentialsRequestBody} from './specs/client.controller.spec';
 import {JwtService} from '../Procesos/jwt-service';
+import {
+  TokenServiceBindings,
+  UserServiceBindings,
+  PasswordHasherBindings,
+} from '../keys';
+import {UserService} from '@loopback/authentication';
 
 //#endregion
 
@@ -39,11 +46,11 @@ export class TbClienteController {
   constructor(
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
-    @inject('service.hasher')
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public hasher: BcyptHasher,
-    @inject('services.client.services')
+    @inject(UserServiceBindings.USER_SERVICE)
     public clientService: MyClientService,
-    @inject('services.jwt.service')
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: JwtService,
   ) {}
 
@@ -241,13 +248,14 @@ export class TbClienteController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{token: string}> {
+  ): Promise<{token: string; idCliente: string}> {
     const cliente = await this.clientService.verifyCredentials(credentials);
     console.log(cliente);
     const UserProfile = await this.clientService.convertToUserProfile(cliente);
     console.log(UserProfile);
 
     const token = await this.jwtService.generateToken(UserProfile);
-    return Promise.resolve({token});
+    const idCliente = await UserProfile[securityId];
+    return Promise.resolve({token, idCliente});
   }
 }
