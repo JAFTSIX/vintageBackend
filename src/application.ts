@@ -1,23 +1,25 @@
-import {BootMixin} from '@loopback/boot';
-import {ApplicationConfig} from '@loopback/core';
+import { BootMixin } from '@loopback/boot';
+import { ApplicationConfig } from '@loopback/core';
 import {
   RestExplorerBindings,
   RestExplorerComponent,
 } from '@loopback/rest-explorer';
-import {RepositoryMixin} from '@loopback/repository';
-import {RestApplication} from '@loopback/rest';
-import {ServiceMixin} from '@loopback/service-proxy';
+import { RepositoryMixin } from '@loopback/repository';
+import { RestApplication } from '@loopback/rest';
+import { ServiceMixin } from '@loopback/service-proxy';
 import path from 'path';
-import {MySequence} from './sequence';
-import {BcyptHasher} from './Procesos/hash.password.bcrypt';
-import {MyClientService} from './Procesos/client-service';
-import {JwtService} from './Procesos/jwt-service';
+import { MySequence } from './sequence';
+import { BcyptHasher } from './Procesos/hash.password.bcrypt';
+import { MyClientService } from './Procesos/client-service';
+import { JwtService } from './Procesos/jwt-service';
 import {
   TokenServiceConstant,
   TokenServiceBindings,
   PasswordHasherBindings,
   UserServiceBindings,
 } from './keys';
+import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
+import { JWTStrategy } from './/Procesos/jwt-strategy'
 
 export class VintageBackendApp extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -27,6 +29,9 @@ export class VintageBackendApp extends BootMixin(
 
     this.setupBinding();
     // Set up the custom sequence
+    this.component(AuthenticationComponent);
+    registerAuthenticationStrategy(this, JWTStrategy)
+
     this.sequence(MySequence);
 
     // Set up default home page

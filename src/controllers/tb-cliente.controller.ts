@@ -38,7 +38,7 @@ import {
   UserServiceBindings,
   PasswordHasherBindings,
 } from '../keys';
-import { UserService, TokenService } from '@loopback/authentication';
+import { UserService, TokenService, authenticate } from '@loopback/authentication';
 
 //#endregion
 
@@ -51,7 +51,8 @@ export class TbClienteController {
     @inject(UserServiceBindings.USER_SERVICE)
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
-    public jwtService: TokenService,
+    public jwtService: TokenService,//public jwtService: JwtService,
+
   ) { }
 
   @post('/Cliente', {
@@ -264,4 +265,11 @@ export class TbClienteController {
     const idCliente = await UserProfile[securityId];
     return Promise.resolve({ token, idCliente });
   }
+
+  @get('/Cliente/picha')
+  @authenticate('jwt')
+  async me(): Promise<string> {
+    return Promise.resolve('YEEEEES')
+  }
+
 }
