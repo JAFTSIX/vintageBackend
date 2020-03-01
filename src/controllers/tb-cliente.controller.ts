@@ -18,27 +18,27 @@ import {
   requestBody,
   HttpErrors,
 } from '@loopback/rest';
-import {inject} from '@loopback/core';
+import { inject } from '@loopback/core';
 
-import {TbCliente} from '../models';
-import {TbClienteRepository, Credentials} from '../repositories';
-import {securityId} from '@loopback/security';
+import { TbCliente } from '../models';
+import { TbClienteRepository, Credentials } from '../repositories';
+import { securityId } from '@loopback/security';
 
 //#region Mis imports
 
 import Validar = require('../Procesos/validar');
 import debug from 'debug';
 
-import {BcyptHasher} from '../Procesos/hash.password.bcrypt';
-import {MyClientService} from '../Procesos/client-service';
-import {CredentialsRequestBody} from './specs/client.controller.spec';
-import {JwtService} from '../Procesos/jwt-service';
+import { BcyptHasher } from '../Procesos/hash.password.bcrypt';
+import { MyClientService } from '../Procesos/client-service';
+import { CredentialsRequestBody } from './specs/client.controller.spec';
+import { JwtService } from '../Procesos/jwt-service';
 import {
   TokenServiceBindings,
   UserServiceBindings,
   PasswordHasherBindings,
 } from '../keys';
-import {UserService} from '@loopback/authentication';
+import { UserService } from '@loopback/authentication';
 
 //#endregion
 
@@ -52,13 +52,13 @@ export class TbClienteController {
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: JwtService,
-  ) {}
+  ) { }
 
   @post('/Cliente', {
     responses: {
       '200': {
         description: 'TbCliente model instance',
-        content: {'application/json': {schema: getModelSchemaRef(TbCliente)}},
+        content: { 'application/json': { schema: getModelSchemaRef(TbCliente) } },
       },
     },
   })
@@ -97,7 +97,7 @@ export class TbClienteController {
     responses: {
       '200': {
         description: 'TbCliente model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -116,7 +116,7 @@ export class TbClienteController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(TbCliente, {includeRelations: true}),
+              items: getModelSchemaRef(TbCliente, { includeRelations: true }),
             },
           },
         },
@@ -134,7 +134,7 @@ export class TbClienteController {
     responses: {
       '200': {
         description: 'TbCliente PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -142,7 +142,7 @@ export class TbClienteController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbCliente, {partial: true}),
+          schema: getModelSchemaRef(TbCliente, { partial: true }),
         },
       },
     })
@@ -159,7 +159,7 @@ export class TbClienteController {
         description: 'TbCliente model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbCliente, {includeRelations: true}),
+            schema: getModelSchemaRef(TbCliente, { includeRelations: true }),
           },
         },
       },
@@ -185,7 +185,7 @@ export class TbClienteController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbCliente, {partial: true}),
+          schema: getModelSchemaRef(TbCliente, { partial: true }),
         },
       },
     })
@@ -239,6 +239,9 @@ export class TbClienteController {
                 token: {
                   type: 'string',
                 },
+                idCliente: {
+                  type: 'string',
+                },
               },
             },
           },
@@ -248,14 +251,17 @@ export class TbClienteController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{token: string; idCliente: string}> {
+  ): Promise<{ token: string; idCliente: string }> {
     const cliente = await this.clientService.verifyCredentials(credentials);
-    console.log(cliente);
-    const UserProfile = await this.clientService.convertToUserProfile(cliente);
+    //console.log(cliente);
+
+    //esta madre no tiene promises ni await
+    const UserProfile = this.clientService.convertToUserProfile(cliente);
     console.log(UserProfile);
+
 
     const token = await this.jwtService.generateToken(UserProfile);
     const idCliente = await UserProfile[securityId];
-    return Promise.resolve({token, idCliente});
+    return Promise.resolve({ token, idCliente });
   }
 }
