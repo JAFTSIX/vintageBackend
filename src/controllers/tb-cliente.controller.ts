@@ -38,7 +38,7 @@ import {
   UserServiceBindings,
   PasswordHasherBindings,
 } from '../keys';
-import { UserService } from '@loopback/authentication';
+import { UserService, TokenService } from '@loopback/authentication';
 
 //#endregion
 
@@ -51,7 +51,7 @@ export class TbClienteController {
     @inject(UserServiceBindings.USER_SERVICE)
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
-    public jwtService: JwtService,
+    public jwtService: TokenService,
   ) { }
 
   @post('/Cliente', {

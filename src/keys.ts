@@ -17,7 +17,7 @@ export namespace TokenServiceBindings {
   export const TOKEN_EXPIRES_IN = BindingKey.create<string>(
     'authentication.jwt.expiresIn',
   );
-  export const TOKEN_SERVICE = BindingKey.create<JwtService>(
+  export const TOKEN_SERVICE = BindingKey.create<TokenService>(
     'services.jwt.service',
   );
 }
