@@ -240,9 +240,7 @@ export class TbClienteController {
                 token: {
                   type: 'string',
                 },
-                idCliente: {
-                  type: 'string',
-                },
+                TbCliente: getModelSchemaRef(TbCliente, { includeRelations: true }),
               },
             },
           },
@@ -252,24 +250,30 @@ export class TbClienteController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{ token: string; idCliente: string }> {
+  ): Promise<{ token: string; cliente: TbCliente }> {
+
+    console.log(credentials);
     const cliente = await this.clientService.verifyCredentials(credentials);
     //console.log(cliente);
 
-    //esta madre no tiene promises ni await
+
     const UserProfile = this.clientService.convertToUserProfile(cliente);
-    console.log(UserProfile);
+    //console.log(UserProfile);
 
 
     const token = await this.jwtService.generateToken(UserProfile);
-    const idCliente = await UserProfile[securityId];
-    return Promise.resolve({ token, idCliente });
+    delete cliente.sContrasena;
+
+    return Promise.resolve({ token, cliente });
   }
+
 
   @get('/Cliente/picha')
   @authenticate('jwt')
   async me(): Promise<string> {
     return Promise.resolve('YEEEEES')
+
   }
+
 
 }
