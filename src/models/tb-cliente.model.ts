@@ -58,8 +58,23 @@ export class TbCliente extends Entity {
 
   @property({
     type: 'boolean',
+    required: true,
+    default: 1,
   })
-  bActivo?: boolean;
+  bActivo: boolean;
+
+  @property({
+    type: 'boolean',
+    required: true,
+    default: 0,
+  })
+  bAdmin: boolean;
+
+  @property({
+    type: 'array',
+    itemType: 'string',
+  })
+  aPermisos?: string[];
 
 
   constructor(data?: Partial<TbCliente>) {
