@@ -22,7 +22,7 @@ import { inject } from '@loopback/core';
 
 import { TbCliente } from '../models';
 import { TbClienteRepository, Credentials } from '../repositories';
-import { securityId } from '@loopback/security';
+import { UserProfile } from '@loopback/security';
 
 //#region Mis imports
 
@@ -38,7 +38,8 @@ import {
   UserServiceBindings,
   PasswordHasherBindings,
 } from '../keys';
-import { UserService, TokenService, authenticate } from '@loopback/authentication';
+import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
+import { PermissionKeys } from '../Procesos/permission-keys';
 
 //#endregion
 
@@ -88,7 +89,7 @@ export class TbClienteController {
       tbCliente.sContrasena,
     );
 
-    tbCliente.bActivo = true;
+    tbCliente.aPermisos = [PermissionKeys.AccessAuthFeature];
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
     return saved;
@@ -264,15 +265,18 @@ export class TbClienteController {
     const token = await this.jwtService.generateToken(UserProfile);
     delete cliente.sContrasena;
 
+    
+
     return Promise.resolve({ token, cliente });
   }
 
 
   @get('/Cliente/picha')
   @authenticate('jwt')
-  async me(): Promise<string> {
-    return Promise.resolve('YEEEEES')
-
+  async me( @inject(AuthenticationBindings.CURRENT_USER)
+  currentUser: UserProfile, ): Promise<UserProfile> {
+    console.log(currentUser)
+    return Promise.resolve(currentUser);
   }
 
 

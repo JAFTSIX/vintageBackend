@@ -23,16 +23,16 @@ export class JWTStrategy implements AuthenticationStrategy {
 
     extractCredentials(request: Request): string {
         if (!request.headers.authorization) {
-            throw new HttpErrors.Unauthorized('saque token papa');
+            throw new HttpErrors.Unauthorized(`Authorization header not found.`);
         }
 
         const authHeaderValue = request.headers.authorization
 
-        if (!authHeaderValue.startsWith('Bearer')) throw new HttpErrors.Unauthorized('header is not Bearer');
+        if (!authHeaderValue.startsWith('Bearer')) throw new HttpErrors.Unauthorized(`Authorization header is not of type 'Bearer'.`);
 
 
         const regexauth = /^Bearer\s+(.+\.){2}(.+){2}?/
-        if (!regexauth.test(authHeaderValue)) throw new HttpErrors.Unauthorized('the header is wrong gfo');
+        if (!regexauth.test(authHeaderValue)) throw new HttpErrors.Unauthorized(`Authorization header value has too many parts. It must follow the pattern: 'Bearer xx.yy.zz' where xx.yy.zz is a valid JWT token.`);
 
 
         return authHeaderValue.split(' ')[1]
