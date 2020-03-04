@@ -1,4 +1,4 @@
-import { UserProfile, securityId } from '@loopback/security';
+import { UserProfile, securityId, SecurityBindings } from '@loopback/security';
 import { promisify } from 'util';
 import { HttpErrors } from '@loopback/rest';
 import { inject } from '@loopback/core';
@@ -28,8 +28,8 @@ export class JwtService implements TokenService {
       const decryptedToken = await verifyAsync(token, this.jwtSecret);
       // don't copy over  token field 'iat' and 'exp', nor 'email' to user profile
       userProfile = Object.assign(
-        { [securityId]: '', name: '' },
-        { id: decryptedToken.id, name: decryptedToken.name },
+        { [securityId]: '', name: '', email:'' },
+        { [securityId]: decryptedToken[securityId], name: decryptedToken.name, email: decryptedToken.email},
       );
     } catch (error) {
       throw new HttpErrors.Unauthorized(

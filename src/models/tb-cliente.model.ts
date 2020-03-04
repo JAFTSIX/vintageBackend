@@ -58,15 +58,13 @@ export class TbCliente extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
-    default: 1,
+    default: true,
   })
   bActivo: boolean;
 
   @property({
     type: 'boolean',
-    required: true,
-    default: 0,
+    default: false,
   })
   bAdmin: boolean;
 
