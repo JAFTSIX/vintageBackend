@@ -45,4 +45,22 @@ export class MyClientService implements UserService<TbCliente, Credentials> {
       name: usuario.sNombre
     };
   }
+
+  async UserProfileToTbCliente(usuario: UserProfile): Promise<TbCliente> {
+
+    const foundUser = await this
+      .tbClienteRepository
+      .findOne({
+        where: {
+          sCorreo: usuario.email
+        }
+      });
+
+    if (!foundUser) {
+      throw new HttpErrors.NotFound('El usuario no se enontró');
+    }
+    return foundUser
+
+  }
+
 }

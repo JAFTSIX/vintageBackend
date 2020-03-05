@@ -20,11 +20,14 @@ import { PermissionKeys } from '../Procesos/permission-keys';
 
 
 export class TbClienteAdminController {
-  constructor(    
-  @repository(TbClienteRepository)
-  public tbClienteRepository: TbClienteRepository,
-  @inject(PasswordHasherBindings.PASSWORD_HASHER)
-  public hasher: BcyptHasher,) {}
+  constructor(
+    @repository(TbClienteRepository)
+    public tbClienteRepository: TbClienteRepository,
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
+    public hasher: BcyptHasher, ) { }
+
+
+
 
   @post('/Admin', {
     responses: {
@@ -64,12 +67,14 @@ export class TbClienteAdminController {
     tbCliente.sContrasena = await this.hasher.hashPassword(
       tbCliente.sContrasena,
     );
-    
+
     tbCliente.aPermisos = [PermissionKeys.Create, PermissionKeys.Delete, PermissionKeys.Update,];
     tbCliente.bAdmin = true;
 
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
     return saved;
-  } 
+  }
+
+
 }

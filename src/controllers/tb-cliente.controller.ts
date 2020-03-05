@@ -265,7 +265,7 @@ export class TbClienteController {
     const token = await this.jwtService.generateToken(UserProfile);
     delete cliente.sContrasena;
 
-    
+
 
     return Promise.resolve({ token, cliente });
   }
@@ -273,9 +273,10 @@ export class TbClienteController {
 
   @get('/Cliente/picha')
   @authenticate('jwt')
-  async me( @inject(AuthenticationBindings.CURRENT_USER)
+  async me(@inject(AuthenticationBindings.CURRENT_USER)
   currentUser: UserProfile, ): Promise<UserProfile> {
     console.log(currentUser)
+
     return Promise.resolve(currentUser);
   }
 

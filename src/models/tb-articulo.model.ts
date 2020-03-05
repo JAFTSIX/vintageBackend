@@ -1,4 +1,4 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model()
 export class TbArticulo extends Entity {
@@ -12,6 +12,7 @@ export class TbArticulo extends Entity {
   @property({
     type: 'string',
     required: true,
+
   })
   sNombre: string;
 
@@ -36,6 +37,7 @@ export class TbArticulo extends Entity {
   @property({
     type: 'string',
     required: true,
+
   })
   sUrlImagen: string;
 
