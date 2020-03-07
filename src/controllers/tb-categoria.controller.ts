@@ -79,13 +79,13 @@ export class TbCategoriaController {
   ): Promise<TbCategoria> {
     console.log(currentUser)
 
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
 
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente['create']) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente['create']) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -113,12 +113,12 @@ export class TbCategoriaController {
     @param.query.object('where', getWhereSchemaFor(TbCategoria)) where?: Where<TbCategoria>,
 
   ): Promise<Count> {
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["count"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["count"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -151,12 +151,12 @@ export class TbCategoriaController {
     @param.query.object('filter', getFilterSchemaFor(TbCategoria)) filter?: Filter<TbCategoria>,
   ): Promise<TbCategoria[]> {
 
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["find"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["find"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -189,12 +189,12 @@ export class TbCategoriaController {
     currentUser: UserProfile,
     @param.query.object('where', getWhereSchemaFor(TbCategoria)) where?: Where<TbCategoria>,
   ): Promise<Count> {
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["updateAll"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["updateAll"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -223,12 +223,12 @@ export class TbCategoriaController {
     @param.path.string('id') id: string,
     @param.query.object('filter', getFilterSchemaFor(TbCategoria)) filter?: Filter<TbCategoria>
   ): Promise<TbCategoria> {
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["findById"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["findById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -261,12 +261,12 @@ export class TbCategoriaController {
     })
     tbCategoria: TbCategoria,
   ): Promise<void> {
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["updateById"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["updateById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -291,12 +291,12 @@ export class TbCategoriaController {
     @param.path.string('id') id: string,
     @requestBody() tbCategoria: TbCategoria,
   ): Promise<void> {
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["replaceById"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["replaceById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -321,12 +321,12 @@ export class TbCategoriaController {
     @param.path.string('id') id: string
   ): Promise<void> {
 
-    const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!pretender.bAdmin || pretender.aPermisos === undefined) {
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    if (!admit.bAdmin || admit.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["deleteById"]) === -1) {
+    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente.deleteById) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }

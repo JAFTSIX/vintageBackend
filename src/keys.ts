@@ -83,7 +83,13 @@ export class ArrayPermissionKeys {
   Factura: tables
   Historial: tables
   Receta: tables
-  AccessAuthFeature = 'AccessAuthFeature'
+  manage = {
+    Himself: 'manageHimself',// ¡PELIGRO! permite a un admin hacer updates a su propia cuenta
+    Cliente: 'manageClientes',// ¡PELIGRO! permite a un admin hacer updates a los clientes
+    admin: 'manageAdmin'// ¡PELIGRO! permite a un admin hacer updates a otros admins
+  }
+
+  AccessAuthFeature: string = 'AccessAuthFeature'
 
 
   constructor() {
