@@ -36,9 +36,9 @@ export namespace UserServiceBindings {
 }
 
 
-export class ArrayPermissionKeys {
 
 
+class tables {
   create: string = 'create'
   count: string = 'count'
   find: string = 'find'
@@ -47,6 +47,7 @@ export class ArrayPermissionKeys {
   updateById: string = 'updateById'
   replaceById: string = 'replaceById'
   deleteById: string = 'deleteById'
+
 
   constructor(tabla: string) {
 
@@ -70,6 +71,31 @@ export class ArrayPermissionKeys {
     this.replaceById,
     this.deleteById]
   }
+
+
+}
+
+export class ArrayPermissionKeys {
+
+
+  Cliente: tables
+  Articulo: tables
+  Factura: tables
+  Historial: tables
+  Receta: tables
+  AccessAuthFeature = 'AccessAuthFeature'
+
+
+  constructor() {
+    this.Cliente = new tables('TbCliente')
+    this.Articulo = new tables('TbArticulo')
+    this.Factura = new tables('TbFactura')
+    this.Historial = new tables('TbHistorial')
+    this.Receta = new tables('TbReceta')
+
+  }
+
+
 
 
 }

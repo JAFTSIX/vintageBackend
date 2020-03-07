@@ -8,11 +8,11 @@ import {
 import { post, getModelSchemaRef, requestBody, HttpErrors } from "@loopback/rest";
 import { TbCliente } from "../models";
 import { inject } from '@loopback/core';
-import { PasswordHasherBindings } from '../keys';
+import { PasswordHasherBindings, ArrayPermissionKeys } from '../keys';
 import { TbClienteRepository } from '../repositories';
 import { BcyptHasher } from '../Procesos/hash.password.bcrypt';
 import Validar = require('../Procesos/validar');
-import { PermissionKeys } from '../Procesos/permission-keys';
+
 
 // Uncomment these imports to begin using these cool features!
 
@@ -24,7 +24,9 @@ export class TbClienteAdminController {
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
-    public hasher: BcyptHasher, ) { }
+    public hasher: BcyptHasher,
+    public permisos: ArrayPermissionKeys = new ArrayPermissionKeys()
+  ) { }
 
 
 
@@ -68,7 +70,8 @@ export class TbClienteAdminController {
       tbCliente.sContrasena,
     );
 
-    tbCliente.aPermisos = [PermissionKeys.Create, PermissionKeys.Delete, PermissionKeys.Update,];
+
+    tbCliente.aPermisos = [this.permisos.Cliente.create, this.permisos.Cliente.find, this.permisos.Cliente.updateById,];
     tbCliente.bAdmin = true;
 
     const saved = await this.tbClienteRepository.create(tbCliente);

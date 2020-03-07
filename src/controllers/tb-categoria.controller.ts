@@ -33,15 +33,7 @@ import { inject } from '@loopback/core';
 import { UserProfile } from '@loopback/security';
 
 
-function annotateName(target: any, name: string, desc: any) {
-  var method = desc.value;
-  desc.value = function () {
-    var prevMethod = this.currentMethod;
-    this.currentMethod = name;
-    method.apply(this, arguments);
-    this.currentMethod = prevMethod;
-  }
-}
+
 
 
 export class TbCategoriaController {
@@ -52,7 +44,7 @@ export class TbCategoriaController {
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
-    public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys('TbCategoria'),
+    public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys(),
   ) { }
 
   currentMethod: string;
@@ -69,7 +61,7 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async create(
     @requestBody({
       content: {
@@ -92,10 +84,8 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    //const sd: any = this.currentMethod
 
-
-    if (pretender.aPermisos.indexOf(this.arrayPermissions['create']) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente['create']) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -116,7 +106,7 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async count(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
@@ -128,7 +118,7 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["count"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["count"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -154,7 +144,7 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async find(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
@@ -166,7 +156,7 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["find"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["find"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -185,7 +175,7 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async updateAll(
     @requestBody({
       content: {
@@ -204,7 +194,7 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["updateAll"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["updateAll"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -225,7 +215,7 @@ export class TbCategoriaController {
       },
     },
   })
-  @annotateName
+
   @authenticate('jwt')
   async findById(
     @inject(AuthenticationBindings.CURRENT_USER)
@@ -238,7 +228,7 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["findById"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["findById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -257,7 +247,7 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async updateById(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
@@ -276,7 +266,7 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["updateById"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["updateById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -294,7 +284,7 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async replaceById(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
@@ -306,7 +296,7 @@ export class TbCategoriaController {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["replaceById"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["replaceById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -324,18 +314,19 @@ export class TbCategoriaController {
     },
   })
   @authenticate('jwt')
-  @annotateName
+
   async deleteById(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
     @param.path.string('id') id: string
   ): Promise<void> {
+
     const pretender: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
     if (!pretender.bAdmin || pretender.aPermisos === undefined) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (pretender.aPermisos.indexOf(this.arrayPermissions["deleteById"]) === -1) {
+    if (pretender.aPermisos.indexOf(this.arrayPermissions.Cliente["deleteById"]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }

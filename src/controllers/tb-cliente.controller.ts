@@ -41,7 +41,7 @@ import {
   ArrayPermissionKeys,
 } from '../keys';
 import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
-import { PermissionKeys } from '../Procesos/permission-keys';
+
 
 //#endregion
 
@@ -55,7 +55,7 @@ export class TbClienteController {
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
-    public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys('TbCliente'),
+    public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys(),
   ) { }
 
   @post('/Cliente', {
@@ -91,7 +91,7 @@ export class TbClienteController {
       tbCliente.sContrasena,
     );
 
-    tbCliente.aPermisos = [PermissionKeys.AccessAuthFeature];
+    tbCliente.aPermisos = [this.arrayPermissions.AccessAuthFeature];
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
     return saved;
