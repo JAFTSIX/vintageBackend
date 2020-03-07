@@ -37,6 +37,8 @@ import {
   TokenServiceBindings,
   UserServiceBindings,
   PasswordHasherBindings,
+
+  ArrayPermissionKeys,
 } from '../keys';
 import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
 import { PermissionKeys } from '../Procesos/permission-keys';
@@ -53,7 +55,7 @@ export class TbClienteController {
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
-
+    public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys('TbCliente'),
   ) { }
 
   @post('/Cliente', {
@@ -277,6 +279,7 @@ export class TbClienteController {
   currentUser: UserProfile, ): Promise<UserProfile> {
     console.log(currentUser)
 
+    console.log(this.arrayPermissions)
     return Promise.resolve(currentUser);
   }
 
