@@ -71,9 +71,9 @@ export class TbClienteAdminController {
     );
 
 
-    tbCliente.aPermisos = [this.permisos.Cliente.create, this.permisos.Cliente.find, this.permisos.Cliente.updateById,];
+    //    tbCliente.aPermisos = [this.permisos.Cliente.create, this.permisos.Cliente.find, this.permisos.Cliente.updateById,];
     tbCliente.bAdmin = true;
-
+    tbCliente.aPermisos = [...this.permisos.Cliente.getArray(), ...this.permisos.Categoria.getArray()];
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
     return saved;

@@ -17,20 +17,20 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {TbFactura} from '../models';
-import {TbFacturaRepository} from '../repositories';
+import { TbFactura } from '../models';
+import { TbFacturaRepository } from '../repositories';
 
 export class TbFacturaController {
   constructor(
     @repository(TbFacturaRepository)
-    public tbFacturaRepository : TbFacturaRepository,
-  ) {}
+    public tbFacturaRepository: TbFacturaRepository,
+  ) { }
 
   @post('/Factura', {
     responses: {
       '200': {
         description: 'TbFactura model instance',
-        content: {'application/json': {schema: getModelSchemaRef(TbFactura)}},
+        content: { 'application/json': { schema: getModelSchemaRef(TbFactura) } },
       },
     },
   })
@@ -54,7 +54,7 @@ export class TbFacturaController {
     responses: {
       '200': {
         description: 'TbFactura model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -72,7 +72,7 @@ export class TbFacturaController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(TbFactura, {includeRelations: true}),
+              items: getModelSchemaRef(TbFactura, { includeRelations: true }),
             },
           },
         },
@@ -82,6 +82,7 @@ export class TbFacturaController {
   async find(
     @param.query.object('filter', getFilterSchemaFor(TbFactura)) filter?: Filter<TbFactura>,
   ): Promise<TbFactura[]> {
+
     return this.tbFacturaRepository.find(filter);
   }
 
@@ -89,7 +90,7 @@ export class TbFacturaController {
     responses: {
       '200': {
         description: 'TbFactura PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -97,7 +98,7 @@ export class TbFacturaController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbFactura, {partial: true}),
+          schema: getModelSchemaRef(TbFactura, { partial: true }),
         },
       },
     })
@@ -113,7 +114,7 @@ export class TbFacturaController {
         description: 'TbFactura model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbFactura, {includeRelations: true}),
+            schema: getModelSchemaRef(TbFactura, { includeRelations: true }),
           },
         },
       },
@@ -138,7 +139,7 @@ export class TbFacturaController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbFactura, {partial: true}),
+          schema: getModelSchemaRef(TbFactura, { partial: true }),
         },
       },
     })

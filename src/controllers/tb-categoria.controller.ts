@@ -26,11 +26,13 @@ import { TokenService, authenticate, AuthenticationBindings } from '@loopback/au
 import {
   TokenServiceBindings,
   UserServiceBindings,
-  ArrayPermissionKeys
+  ArrayPermissionKeys,
+  tables
 } from '../keys';
 import { MyClientService } from '../Procesos/client-service';
 import { inject } from '@loopback/core';
 import { UserProfile } from '@loopback/security';
+
 
 
 
@@ -45,9 +47,10 @@ export class TbCategoriaController {
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
     public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys(),
+
   ) { }
 
-  currentMethod: string;
+
 
   @post('/Categoria', {
     responses: {
@@ -55,13 +58,11 @@ export class TbCategoriaController {
         description: 'TbCategoria model instance',
         content: { 'application/json': { schema: getModelSchemaRef(TbCategoria, { includeRelations: true }), } },
 
-
-
       },
     },
   })
   @authenticate('jwt')
-
+  //@annotateName
   async create(
     @requestBody({
       content: {
@@ -77,22 +78,17 @@ export class TbCategoriaController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile
   ): Promise<TbCategoria> {
-    console.log(currentUser)
-
+    //console.log(currentUser)
+    //const metodo = this.currentMethod
+    const metodo = 'create'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
 
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente['create']) === -1) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
-    }
-
-    const categoria = await this.tbCategoriaRepository.create(tbCategoria);
-    delete categoria._id
-    return categoria
+    return await this.tbCategoriaRepository.create(tbCategoria);
   }
 
 
@@ -113,12 +109,9 @@ export class TbCategoriaController {
     @param.query.object('where', getWhereSchemaFor(TbCategoria)) where?: Where<TbCategoria>,
 
   ): Promise<Count> {
+    const metodo = 'count'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-    }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["count"]) === -1) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -150,16 +143,13 @@ export class TbCategoriaController {
     currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(TbCategoria)) filter?: Filter<TbCategoria>,
   ): Promise<TbCategoria[]> {
-
+    const metodo = 'find'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["find"]) === -1) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
-    }
     return this.tbCategoriaRepository.find(filter);
   }
 
@@ -189,12 +179,9 @@ export class TbCategoriaController {
     currentUser: UserProfile,
     @param.query.object('where', getWhereSchemaFor(TbCategoria)) where?: Where<TbCategoria>,
   ): Promise<Count> {
+    const metodo = 'updateAll'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-    }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["updateAll"]) === -1) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
@@ -223,17 +210,12 @@ export class TbCategoriaController {
     @param.path.string('id') id: string,
     @param.query.object('filter', getFilterSchemaFor(TbCategoria)) filter?: Filter<TbCategoria>
   ): Promise<TbCategoria> {
+    const metodo = 'findById'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["findById"]) === -1) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-    }
-
-
 
     return this.tbCategoriaRepository.findById(id, filter);
   }
@@ -261,16 +243,12 @@ export class TbCategoriaController {
     })
     tbCategoria: TbCategoria,
   ): Promise<void> {
+    const metodo = 'updateById'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["updateById"]) === -1) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-    }
-
 
     await this.tbCategoriaRepository.updateById(id, tbCategoria);
   }
@@ -291,16 +269,12 @@ export class TbCategoriaController {
     @param.path.string('id') id: string,
     @requestBody() tbCategoria: TbCategoria,
   ): Promise<void> {
+    const metodo = 'replaceById'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente["replaceById"]) === -1) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-    }
-
 
     await this.tbCategoriaRepository.replaceById(id, tbCategoria);
   }
@@ -320,17 +294,12 @@ export class TbCategoriaController {
     currentUser: UserProfile,
     @param.path.string('id') id: string
   ): Promise<void> {
-
+    const metodo = 'deleteById'
     const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined) {
+    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
       throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
 
     }
-    if (admit.aPermisos.indexOf(this.arrayPermissions.Cliente.deleteById) === -1) {
-      throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-    }
-
 
     await this.tbCategoriaRepository.deleteById(id);
   }

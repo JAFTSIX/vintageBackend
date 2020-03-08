@@ -5,6 +5,12 @@ import { TbCliente } from './models';
 import { passwordHasher } from './Procesos/hash.password.bcrypt';
 import { JwtService } from './Procesos/jwt-service';
 
+
+interface IDictionary {
+  [index: string]: string;
+}
+
+
 export namespace TokenServiceConstant {
   export const TOKEN_SECRET_VALUE = '1234asdf';
   export const TOKEN_EXPIRES_IN_VALUE = '6h';
@@ -38,7 +44,7 @@ export namespace UserServiceBindings {
 
 
 
-class tables {
+export class tables {
   create: string = 'create'
   count: string = 'count'
   find: string = 'find'
@@ -61,7 +67,23 @@ class tables {
     this.deleteById = this.deleteById.concat(tabla)
   }
 
-  permisos() {
+  getDictionary() {
+    var params = {} as IDictionary
+    params['create'] = this.create
+    params['count'] = this.count
+    params['find'] = this.find
+    params['updateAll'] = this.updateAll
+    params['findById'] = this.findById
+    params['updateById'] = this.updateById
+    params['replaceById'] = this.replaceById
+    params['deleteById'] = this.deleteById
+
+
+
+    return params
+  }
+
+  getArray() {
     return [this.create,
     this.count,
     this.find,
@@ -71,7 +93,6 @@ class tables {
     this.replaceById,
     this.deleteById]
   }
-
 
 }
 
@@ -83,6 +104,7 @@ export class ArrayPermissionKeys {
   Factura: tables
   Historial: tables
   Receta: tables
+  Categoria: tables
   manage = {
     Himself: 'manageHimself',// ¡PELIGRO! permite a un admin hacer updates a su propia cuenta
     Cliente: 'manageClientes',// ¡PELIGRO! permite a un admin hacer updates a los clientes
@@ -93,15 +115,14 @@ export class ArrayPermissionKeys {
 
 
   constructor() {
+
     this.Cliente = new tables('TbCliente')
     this.Articulo = new tables('TbArticulo')
     this.Factura = new tables('TbFactura')
     this.Historial = new tables('TbHistorial')
     this.Receta = new tables('TbReceta')
+    this.Categoria = new tables('TbCategoria')
 
   }
-
-
-
 
 }
