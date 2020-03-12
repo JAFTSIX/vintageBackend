@@ -7,6 +7,7 @@ import { TokenService } from '@loopback/authentication';
 const jwt = require('jsonwebtoken');
 const signAsync = promisify(jwt.sign);
 const verifyAsync = promisify(jwt.verify);
+//const Logout = promisify(jwt.Logout);
 
 export class JwtService implements TokenService {
   @inject(TokenServiceBindings.TOKEN_SECRET)
@@ -28,8 +29,8 @@ export class JwtService implements TokenService {
       const decryptedToken = await verifyAsync(token, this.jwtSecret);
       // don't copy over  token field 'iat' and 'exp', nor 'email' to user profile
       userProfile = Object.assign(
-        { [securityId]: '', name: '', email:'' },
-        { [securityId]: decryptedToken[securityId], name: decryptedToken.name, email: decryptedToken.email},
+        { [securityId]: '', name: '', email: '' },
+        { [securityId]: decryptedToken[securityId], name: decryptedToken.name, email: decryptedToken.email },
       );
     } catch (error) {
       throw new HttpErrors.Unauthorized(
@@ -55,5 +56,12 @@ export class JwtService implements TokenService {
       throw new HttpErrors.Unauthorized('Error generating token ' + err);
     }
     return token;
+  }
+
+
+  async destroyToken(token: string): Promise<boolean> {
+
+
+    return true
   }
 }
