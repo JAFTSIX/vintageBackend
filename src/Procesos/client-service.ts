@@ -8,6 +8,7 @@ import { BcyptHasher } from './hash.password.bcrypt';
 import { inject } from '@loopback/core';
 import { PasswordHasherBindings } from '../keys';
 
+
 export class MyClientService implements UserService<TbCliente, Credentials> {
 
 
@@ -15,6 +16,7 @@ export class MyClientService implements UserService<TbCliente, Credentials> {
 
 
   async verifyCredentials(credentials: Credentials): Promise<TbCliente> {
+
     const foundUser = await this
       .tbClienteRepository
       .findOne({

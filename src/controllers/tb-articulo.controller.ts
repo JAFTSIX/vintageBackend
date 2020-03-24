@@ -16,21 +16,22 @@ import {
   put,
   del,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
-import {TbArticulo} from '../models';
-import {TbArticuloRepository} from '../repositories';
+import { TbArticulo } from '../models';
+import { TbArticuloRepository } from '../repositories';
 
 export class TbArticuloController {
   constructor(
     @repository(TbArticuloRepository)
-    public tbArticuloRepository : TbArticuloRepository,
-  ) {}
+    public tbArticuloRepository: TbArticuloRepository,
+  ) { }
 
   @post('/Articulo', {
     responses: {
       '200': {
         description: 'TbArticulo model instance',
-        content: {'application/json': {schema: getModelSchemaRef(TbArticulo)}},
+        content: { 'application/json': { schema: getModelSchemaRef(TbArticulo) } },
       },
     },
   })
@@ -54,7 +55,7 @@ export class TbArticuloController {
     responses: {
       '200': {
         description: 'TbArticulo model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -72,7 +73,7 @@ export class TbArticuloController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(TbArticulo, {includeRelations: true}),
+              items: getModelSchemaRef(TbArticulo, { includeRelations: true }),
             },
           },
         },
@@ -89,7 +90,7 @@ export class TbArticuloController {
     responses: {
       '200': {
         description: 'TbArticulo PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -97,7 +98,7 @@ export class TbArticuloController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbArticulo, {partial: true}),
+          schema: getModelSchemaRef(TbArticulo, { partial: true }),
         },
       },
     })
@@ -113,7 +114,7 @@ export class TbArticuloController {
         description: 'TbArticulo model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbArticulo, {includeRelations: true}),
+            schema: getModelSchemaRef(TbArticulo, { includeRelations: true }),
           },
         },
       },
@@ -138,7 +139,7 @@ export class TbArticuloController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbArticulo, {partial: true}),
+          schema: getModelSchemaRef(TbArticulo, { partial: true }),
         },
       },
     })
@@ -171,4 +172,36 @@ export class TbArticuloController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.tbArticuloRepository.deleteById(id);
   }
+
+
+
+
+  @patch('/Articulo/Desactivar/{id}', {
+    responses: {
+      '204': {
+        description: 'TbArticulo PATCH success',
+      },
+    },
+  })
+  async desactivarById(@param.path.string('id') id: string, ): Promise<void> {
+
+    const articulo = await this.tbArticuloRepository.find({
+      where: {
+        _id: '' + id,
+      },
+    });
+
+    if (articulo.length <= 0) throw new HttpErrors.UnprocessableEntity('Esa receta no se encontró')
+
+    if (articulo[0].bActivo == true) {
+      articulo[0].bActivo = false
+    } else if (articulo[0].bActivo == false) {
+      articulo[0].bActivo = true
+    }
+
+    await this.tbArticuloRepository.updateById(id, articulo[0]);
+  }
+
+
+
 }

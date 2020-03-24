@@ -16,21 +16,51 @@ import {
   put,
   del,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
-import { TbFactura } from '../models';
-import { TbFacturaRepository } from '../repositories';
+import {
+  TbFactura,
+  TbArticulo,
+  TbReceta,
+  TbCliente
+} from '../models';
+import {
+  TbFacturaRepository,
+  TbClienteRepository,
+  TbArticuloRepository,
+  TbRecetaRepository
+} from '../repositories';
+import "reflect-metadata";
+import "es6-shim";
+import {
+  plainToClass
+} from "class-transformer";
+import { ok, err, Result } from 'neverthrow'
+import { resultado } from './../Procesos/Resultado'
+
+
+
 
 export class TbFacturaController {
   constructor(
-    @repository(TbFacturaRepository)
-    public tbFacturaRepository: TbFacturaRepository,
+    @repository(TbFacturaRepository) public tbFacturaRepository: TbFacturaRepository,
+    @repository(TbClienteRepository) public tbClienteRepository: TbClienteRepository,
+    @repository(TbArticuloRepository) public tbArticuloRepository: TbArticuloRepository,
+    @repository(TbRecetaRepository) public tbRecetaRepository: TbRecetaRepository,
   ) { }
+
+
+
 
   @post('/Factura', {
     responses: {
       '200': {
         description: 'TbFactura model instance',
-        content: { 'application/json': { schema: getModelSchemaRef(TbFactura) } },
+        content: {
+          'application/json': {
+            schema: getModelSchemaRef(TbFactura)
+          }
+        },
       },
     },
   })
@@ -44,17 +74,33 @@ export class TbFacturaController {
           }),
         },
       },
-    })
-    tbFactura: Omit<TbFactura, '_id'>,
-  ): Promise<TbFactura> {
-    return this.tbFacturaRepository.create(tbFactura);
+    }) tbFactura: Omit<TbFactura, '_id'>,
+  ): Promise<Result<TbFactura, Error>> {
+
+
+
+
+
+    const resultado1 = await this.sePuedeComprar(tbFactura)
+    if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente))
+
+    //hacer registtro
+
+    const resultado2 = await this.Registrar_compra(tbFactura)
+    if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente))
+
+    return ok(tbFactura)
   }
 
   @get('/Factura/count', {
     responses: {
       '200': {
         description: 'TbFactura model count',
-        content: { 'application/json': { schema: CountSchema } },
+        content: {
+          'application/json': {
+            schema: CountSchema
+          }
+        },
       },
     },
   })
@@ -72,7 +118,9 @@ export class TbFacturaController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(TbFactura, { includeRelations: true }),
+              items: getModelSchemaRef(TbFactura, {
+                includeRelations: true
+              }),
             },
           },
         },
@@ -90,7 +138,11 @@ export class TbFacturaController {
     responses: {
       '200': {
         description: 'TbFactura PATCH success count',
-        content: { 'application/json': { schema: CountSchema } },
+        content: {
+          'application/json': {
+            schema: CountSchema
+          }
+        },
       },
     },
   })
@@ -98,11 +150,12 @@ export class TbFacturaController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbFactura, { partial: true }),
+          schema: getModelSchemaRef(TbFactura, {
+            partial: true
+          }),
         },
       },
-    })
-    tbFactura: TbFactura,
+    }) tbFactura: TbFactura,
     @param.query.object('where', getWhereSchemaFor(TbFactura)) where?: Where<TbFactura>,
   ): Promise<Count> {
     return this.tbFacturaRepository.updateAll(tbFactura, where);
@@ -114,7 +167,9 @@ export class TbFacturaController {
         description: 'TbFactura model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbFactura, { includeRelations: true }),
+            schema: getModelSchemaRef(TbFactura, {
+              includeRelations: true
+            }),
           },
         },
       },
@@ -139,11 +194,12 @@ export class TbFacturaController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbFactura, { partial: true }),
+          schema: getModelSchemaRef(TbFactura, {
+            partial: true
+          }),
         },
       },
-    })
-    tbFactura: TbFactura,
+    }) tbFactura: TbFactura,
   ): Promise<void> {
     await this.tbFacturaRepository.updateById(id, tbFactura);
   }
@@ -172,4 +228,178 @@ export class TbFacturaController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.tbFacturaRepository.deleteById(id);
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /**
+   *
+   * Este metodo intenta verificar si se puede hacer la compra
+   * Estos los pasos que medio sigue
+   *
+   * ver si es articulo o receta
+   * sacar _id
+   * buscar primero en articulos
+   * si encuentra que es un articulo
+   * actualiza la cantidad de estock    pero---el stock debe tener mas de la cantidad que pide
+   * !stock-cant>=0 error
+   *
+   * obj buscar que el cliente no haya comprado ese curso
+   * traigo el cliente -si existe
+   * me fijo que id de recetas es legítimo
+   * reviso su array de recetas
+   * si en ese array esta elementoCarrito._id entonces tira error
+   *
+   *
+   * extra averiguar si el elemnto tenia un id real
+   * va a pasar por 2 tablas y tine que coincidir
+   * @param tbFactura
+   * @var recetas_del_cliente   if==0 entonces
+   * @returns boolean
+   */
+  async sePuedeComprar(tbFactura: TbFactura): Promise<resultado> {
+
+    var respuesta = new resultado(true, 'todo bien')
+
+    const cliente = await this.tbClienteRepository.find({
+      where: {
+        _id: '' + tbFactura.sCliente,
+      },
+    });
+
+    //si el cliente existe
+    if (cliente.length > 0) for (let index = 0; index < tbFactura.aCompras.length; index++) {
+
+      var x = 0
+      const elementoCarrito: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
+
+      const articulo = await this.tbArticuloRepository.find({
+        where: {
+          _id: '' + elementoCarrito._id,
+        },
+      });
+
+      if (articulo.length > 0) {
+
+        if (!((articulo[0].iCant - elementoCarrito.iCant) >= 0)) {
+          respuesta = new resultado(false, 'insuficiente stock');
+          break;
+        }
+        if (elementoCarrito.iCant <= 0) {
+
+          respuesta = new resultado(false, 'cantidad de articulo inválida');
+          break;
+
+        }
+      } else x++
+
+      const receta = await this.tbRecetaRepository.find({
+        where: {
+          _id: '' + elementoCarrito._id,
+        },
+      });
+
+      if (receta.length > 0) {
+        if (cliente[0].aRecetas !== undefined && cliente[0].aRecetas.indexOf(elementoCarrito._id + "") !== -1) {
+          respuesta = new resultado(false, 'esa receta ya está comprada');
+          break;
+        }
+
+
+      } else x++
+
+      if (x === 2) respuesta = new resultado(false, 'elemento no encontrado')
+
+    }
+    else { respuesta = new resultado(false, 'cliente no encontrado') }
+
+    return respuesta
+  }
+
+
+
+  /**
+   * primero debo
+   *intento calcular el total y el subtotal
+   *restar la cantidad del stock
+   * agregar las recetas al cliente
+   * @param tbFactura
+   * @returns resultado
+   *
+   */
+  async Registrar_compra(tbFactura: TbFactura): Promise<resultado> {
+
+    var respuesta = new resultado(true, 'todo bien')
+
+    //si el cliente existe
+    var impuesto = 0;
+    var total = 0;
+
+    tbFactura.aCompras
+
+    for (let index = 0; index < tbFactura.aCompras.length; index++) {
+
+      var x = 0
+
+      const elementoCarrito: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
+
+      const articulo = await this.tbArticuloRepository.find({
+        where: {
+          _id: '' + elementoCarrito._id,
+        },
+      });
+
+      if (articulo.length > 0) {
+        total = total + articulo[0].iPrecio * elementoCarrito.iCant;
+        articulo[0].iCant = articulo[0].iCant - elementoCarrito.iCant;
+        await this.tbArticuloRepository.updateById(articulo[0]._id, articulo[0])
+      } else x++
+
+      const receta = await this.tbRecetaRepository.find({
+        where: {
+          _id: '' + elementoCarrito._id,
+        },
+      });
+
+      if (receta.length > 0) {
+        total = total + elementoCarrito.iPrecio;
+
+        const cliente = await this.tbClienteRepository.find({
+          where: {
+            _id: '' + tbFactura.sCliente,
+          },
+        });
+
+        cliente[0].aRecetas?.push(elementoCarrito._id + '');
+        await this.tbClienteRepository.updateById(tbFactura.sCliente, cliente[0]);
+      } else x++
+
+      if (x === 2) respuesta = new resultado(false, 'elemento no encontrado')
+
+    };
+
+    //sacar el iva
+    tbFactura.iTotal = total
+
+
+    await this.tbFacturaRepository.create(tbFactura)
+
+    return respuesta
+  }
 }
+

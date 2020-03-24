@@ -42,6 +42,8 @@ import {
 } from '../keys';
 import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
 
+import { ok, err, Result } from 'neverthrow'
+import { resultado } from './../Procesos/Resultado'
 
 //#endregion
 
@@ -78,13 +80,14 @@ export class TbClienteController {
       },
     })
     tbCliente: Omit<TbCliente, '_id'>,
-  ): Promise<TbCliente> {
+  ): Promise<Result<TbCliente, Error>> {
     const verificar = await Validar.isFine(tbCliente);
-    if (!verificar.valido)
-      throw new HttpErrors.UnprocessableEntity(verificar.incidente);
+    if (!verificar.valido) return err(new HttpErrors.UnprocessableEntity(verificar.incidente))
 
-    if ((await this.findbyCorreo(tbCliente.sCorreo)).length > 0)
-      throw new HttpErrors.UnprocessableEntity('Ese correo ya existe');
+
+
+    if ((await this.findbyCorreo(tbCliente.sCorreo)).length > 0) return err(new HttpErrors.UnprocessableEntity('Ese correo ya existe'))
+
 
     //esLint-disable-next-line require-atomic-updates
     tbCliente.sContrasena = await this.hasher.hashPassword(
@@ -94,7 +97,8 @@ export class TbClienteController {
     tbCliente.aPermisos = [this.arrayPermissions.AccessAuthFeature];
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
-    return saved;
+
+    return ok(saved);
   }
 
   @get('/Cliente/count', {
@@ -253,27 +257,33 @@ export class TbClienteController {
   })
   async login(
     @requestBody(CredentialsRequestBody) credentials: Credentials,
-  ): Promise<{ token: string; cliente: TbCliente }> {
+  ): Promise<Result<{ token: string; cliente: TbCliente }, Error>> {
 
-    console.log(credentials);
-    const cliente = await this.clientService.verifyCredentials(credentials);
-    //console.log(cliente);
+    try {
 
-
-    const UserProfile = this.clientService.convertToUserProfile(cliente);
-    //console.log(UserProfile);
+      console.log(credentials);
+      const cliente = await this.clientService.verifyCredentials(credentials)//.catch(err=>{ return err(new Error('asd'))});
+      //console.log(cliente);
 
 
-    const token = await this.jwtService.generateToken(UserProfile);
-    delete cliente.sContrasena;
+      const UserProfile = this.clientService.convertToUserProfile(cliente);
+      //console.log(UserProfile);
+
+
+      const token = await this.jwtService.generateToken(UserProfile);
+      delete cliente.sContrasena;
 
 
 
-    return Promise.resolve({ token, cliente });
+      return ok({ token, cliente });
+    } catch (error) {
+      return err(error)
+    }
+
   }
 
 
-  @get('/Cliente/picha')
+  @get('/Cliente/token')
   @authenticate('jwt')
   async me(@inject(AuthenticationBindings.CURRENT_USER)
   currentUser: UserProfile, ): Promise<UserProfile> {
@@ -282,6 +292,7 @@ export class TbClienteController {
     console.log(this.arrayPermissions)
     return Promise.resolve(currentUser);
   }
+
 
 
 }

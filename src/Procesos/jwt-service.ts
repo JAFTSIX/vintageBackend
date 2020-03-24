@@ -42,13 +42,16 @@ export class JwtService implements TokenService {
   }
 
   async generateToken(userProfile: UserProfile): Promise<string> {
-    if (!userProfile) {
-      throw new HttpErrors.Unauthorized(
-        'Error while generating token : UserProfile is null',
-      );
-    }
+
     let token = '';
     try {
+
+      if (!userProfile) {
+        throw new HttpErrors.Unauthorized(
+          'Error while generating token : UserProfile is null',
+        );
+      }
+
       token = await signAsync(userProfile, this.jwtSecret, {
         expiresIn: this.jwtExpiresIn,
       });

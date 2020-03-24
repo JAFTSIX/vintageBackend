@@ -13,6 +13,7 @@ import { TbClienteRepository } from '../repositories';
 import { BcyptHasher } from '../Procesos/hash.password.bcrypt';
 import Validar = require('../Procesos/validar');
 
+import { ok, err, Result } from 'neverthrow'
 
 // Uncomment these imports to begin using these cool features!
 
@@ -51,10 +52,9 @@ export class TbClienteAdminController {
       },
     })
     tbCliente: Omit<TbCliente, '_id'>,
-  ): Promise<TbCliente> {
+  ): Promise<Result<TbCliente, Error>> {
     const verificar = await Validar.isFine(tbCliente);
-    if (!verificar.valido)
-      throw new HttpErrors.UnprocessableEntity(verificar.incidente);
+    if (!verificar.valido) return err(new HttpErrors.UnprocessableEntity(verificar.incidente));
 
     if ((await this
       .tbClienteRepository
@@ -62,8 +62,7 @@ export class TbClienteAdminController {
         where: {
           sCorreo: tbCliente.sCorreo
         }
-      })))
-      throw new HttpErrors.UnprocessableEntity('Ese correo ya existe');
+      }))) return err(new HttpErrors.UnprocessableEntity('Ese correo ya existe'));
 
     //esLint-disable-next-line require-atomic-updates
     tbCliente.sContrasena = await this.hasher.hashPassword(
@@ -78,7 +77,7 @@ export class TbClienteAdminController {
       , ...this.permisos.Receta.getArray(), this.permisos.manage.Cliente, this.permisos.manage.Himself, this.permisos.manage.admin];
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
-    return saved;
+    return ok(saved);
   }
 
 

@@ -1,6 +1,6 @@
 import { TbCliente } from '../models';
 import { TbClienteRepository } from '../repositories';
-
+import { resultado } from './Resultado'
 
 //#region Expresiones regulares
 
@@ -14,14 +14,6 @@ const regexPassword = /^(?=\w*\d)(?=\w*[A-Z])(?=\w*[a-z])\S{8,16}$/
 const regexsCorreo = /^(([^<>()\[\]\\.,;:\s@”]+(\.[^<>()\[\]\\.,;:\s@”]+)*)|(“.+”))@((\[[0–9]{1,3}\.[0–9]{1,3}\.[0–9]{1,3}\.[0–9]{1,3}])|(([a-zA-Z\-0–9]+\.)+[a-zA-Z]{2,}))$/
 //#endregion
 
-class resultado {
-  valido: boolean
-  incidente: string
-  constructor(valido: boolean, incidente: string) {
-    this.valido = valido
-    this.incidente = incidente
-  }
-}
 
 
 async function No_Vacio(objeto: TbCliente): Promise<resultado> {

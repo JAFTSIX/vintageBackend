@@ -1,4 +1,4 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model()
 export class TbFactura extends Entity {
@@ -57,3 +57,5 @@ export interface TbFacturaRelations {
 }
 
 export type TbFacturaWithRelations = TbFactura & TbFacturaRelations;
+
+

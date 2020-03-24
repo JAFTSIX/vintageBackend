@@ -16,21 +16,22 @@ import {
   put,
   del,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
-import {TbReceta} from '../models';
-import {TbRecetaRepository} from '../repositories';
+import { TbReceta } from '../models';
+import { TbRecetaRepository } from '../repositories';
 
 export class TbRecetaController {
   constructor(
     @repository(TbRecetaRepository)
-    public tbRecetaRepository : TbRecetaRepository,
-  ) {}
+    public tbRecetaRepository: TbRecetaRepository,
+  ) { }
 
   @post('/Receta', {
     responses: {
       '200': {
         description: 'TbReceta model instance',
-        content: {'application/json': {schema: getModelSchemaRef(TbReceta)}},
+        content: { 'application/json': { schema: getModelSchemaRef(TbReceta) } },
       },
     },
   })
@@ -54,7 +55,7 @@ export class TbRecetaController {
     responses: {
       '200': {
         description: 'TbReceta model count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -72,7 +73,7 @@ export class TbRecetaController {
           'application/json': {
             schema: {
               type: 'array',
-              items: getModelSchemaRef(TbReceta, {includeRelations: true}),
+              items: getModelSchemaRef(TbReceta, { includeRelations: true }),
             },
           },
         },
@@ -89,7 +90,7 @@ export class TbRecetaController {
     responses: {
       '200': {
         description: 'TbReceta PATCH success count',
-        content: {'application/json': {schema: CountSchema}},
+        content: { 'application/json': { schema: CountSchema } },
       },
     },
   })
@@ -97,7 +98,7 @@ export class TbRecetaController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbReceta, {partial: true}),
+          schema: getModelSchemaRef(TbReceta, { partial: true }),
         },
       },
     })
@@ -113,7 +114,7 @@ export class TbRecetaController {
         description: 'TbReceta model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbReceta, {includeRelations: true}),
+            schema: getModelSchemaRef(TbReceta, { includeRelations: true }),
           },
         },
       },
@@ -138,7 +139,7 @@ export class TbRecetaController {
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbReceta, {partial: true}),
+          schema: getModelSchemaRef(TbReceta, { partial: true }),
         },
       },
     })
@@ -171,4 +172,38 @@ export class TbRecetaController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.tbRecetaRepository.deleteById(id);
   }
+
+
+
+
+
+  @patch('/Receta/Desactivar/{id}', {
+    responses: {
+      '204': {
+        description: 'TbReceta PATCH success',
+      },
+    },
+  })
+  async desactivarById(@param.path.string('id') id: string, ): Promise<void> {
+
+    const Receta = await this.tbRecetaRepository.find({
+      where: {
+        _id: '' + id,
+      },
+    });
+
+    if (Receta.length <= 0) throw new HttpErrors.UnprocessableEntity('Esa receta no se encontró')
+
+    if (Receta[0].bActivo == true) {
+      Receta[0].bActivo = false
+    } else if (Receta[0].bActivo == false) {
+      Receta[0].bActivo = true
+    }
+
+    await this.tbRecetaRepository.updateById(id, Receta[0]);
+  }
+
+
+
+
 }
