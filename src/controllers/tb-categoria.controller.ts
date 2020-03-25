@@ -135,20 +135,20 @@ export class TbCategoriaController {
       },
     },
   })
-  @authenticate('jwt')
+  //  @authenticate('jwt')
 
   async find(
-    @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
+    // @inject(AuthenticationBindings.CURRENT_USER)
+    //currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(TbCategoria)) filter?: Filter<TbCategoria>,
   ): Promise<Result<TbCategoria[], Error>> {
-    const metodo = 'find'
-    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
-    if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
-      return err(new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación"));
+    /*  const metodo = 'find'
+      const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+      if (!admit.bAdmin || admit.aPermisos === undefined || admit.aPermisos.indexOf(this.arrayPermissions.Categoria.getDictionary()[metodo]) === -1) {
+        return err(new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación"));
 
-    }
-
+      }
+  */
     return ok(await this.tbCategoriaRepository.find(filter));
   }
 
