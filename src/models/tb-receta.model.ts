@@ -1,4 +1,4 @@
-import {Entity, model, property} from '@loopback/repository';
+import { Entity, model, property } from '@loopback/repository';
 
 @model()
 export class TbReceta extends Entity {
@@ -45,6 +45,12 @@ export class TbReceta extends Entity {
     required: true,
   })
   sUrlVideo: string;
+
+  @property({
+    type: 'string',
+
+  })
+  sUrlVideoTrailer?: string;
 
   @property({
     type: 'string',

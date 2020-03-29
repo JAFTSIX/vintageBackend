@@ -20,8 +20,8 @@ import {
 } from '@loopback/rest';
 import { inject } from '@loopback/core';
 
-import { TbCliente } from '../models';
-import { TbClienteRepository, Credentials } from '../repositories';
+import { TbCliente, TbReceta } from '../models';
+import { TbClienteRepository, Credentials, TbRecetaRepository } from '../repositories';
 import { UserProfile } from '@loopback/security';
 
 //#region Mis imports
@@ -49,6 +49,8 @@ import { resultado } from './../Procesos/Resultado'
 
 export class TbClienteController {
   constructor(
+    @repository(TbRecetaRepository)
+    public tbRecetaRepository: TbRecetaRepository,
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
@@ -293,6 +295,43 @@ export class TbClienteController {
     return Promise.resolve(currentUser);
   }
 
+
+  @get('/Cliente/Ver/{id}')
+  @authenticate('jwt')
+  async verReceta(@inject(AuthenticationBindings.CURRENT_USER)
+  currentUser: UserProfile,
+    @param.path.string('id') id: string, ): Promise<Result<boolean, Error>> {
+    //console.log(currentUser)
+
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    const Receta: TbReceta = await this.tbRecetaRepository.findById(id).catch(() => { return undefined })
+
+    if (Receta === undefined) {
+      return err(new HttpErrors[400]('receta no encontrada'))
+    }
+
+    if ((Receta.iPrecio > 0) && (admit.aRecetas === undefined || admit.aRecetas.indexOf('' + Receta._id) === -1)) {
+
+      return ok(false);
+
+    } else {
+      return ok(true);
+    }
+
+
+
+  }
+
+
+  @get('/Cliente/eo')
+
+  async me2()
+    : Promise<string> {
+
+
+    console.log(this.arrayPermissions)
+    return Promise.resolve('ok');
+  }
 
 
 }

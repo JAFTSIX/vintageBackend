@@ -53,7 +53,7 @@ export class tables {
   updateById: string = 'updateById'
   replaceById: string = 'replaceById'
   deleteById: string = 'deleteById'
-  desactivarById: string = 'desactivarById'
+
 
   constructor(tabla: string) {
 
@@ -65,7 +65,7 @@ export class tables {
     this.updateById = this.updateById.concat(tabla)
     this.replaceById = this.replaceById.concat(tabla)
     this.deleteById = this.deleteById.concat(tabla)
-    this.desactivarById = this.desactivarById.concat(tabla)
+
 
   }
 
@@ -79,7 +79,7 @@ export class tables {
     params['updateById'] = this.updateById
     params['replaceById'] = this.replaceById
     params['deleteById'] = this.deleteById
-    params['desactivarById'] = this.desactivarById
+
 
 
     return params
@@ -94,7 +94,7 @@ export class tables {
     this.updateById,
     this.replaceById,
     this.deleteById,
-    this.desactivarById
+
     ]
   }
 

@@ -177,32 +177,6 @@ export class TbRecetaController {
 
 
 
-  @patch('/Receta/Desactivar/{id}', {
-    responses: {
-      '204': {
-        description: 'TbReceta PATCH success',
-      },
-    },
-  })
-  async desactivarById(@param.path.string('id') id: string, ): Promise<void> {
-
-    const Receta = await this.tbRecetaRepository.find({
-      where: {
-        _id: '' + id,
-      },
-    });
-
-    if (Receta.length <= 0) throw new HttpErrors.UnprocessableEntity('Esa receta no se encontró')
-
-    if (Receta[0].bActivo == true) {
-      Receta[0].bActivo = false
-    } else if (Receta[0].bActivo == false) {
-      Receta[0].bActivo = true
-    }
-
-    await this.tbRecetaRepository.updateById(id, Receta[0]);
-  }
-
 
 
 
