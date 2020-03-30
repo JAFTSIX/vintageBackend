@@ -32,7 +32,7 @@ export class JWTStrategy implements AuthenticationStrategy {
 
 
         const regexauth = /^Bearer\s+(.+\.){2}(.+){2}?/
-        console.log('token vacio', authHeaderValue)
+
         if (!regexauth.test(authHeaderValue)) throw new HttpErrors.Unauthorized(`Authorization header value has too many parts. It must follow the pattern: 'Bearer xx.yy.zz' where xx.yy.zz is a valid JWT token.`);
 
 
