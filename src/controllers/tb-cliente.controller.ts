@@ -371,6 +371,43 @@ export class TbClienteController {
 
   }
 
+
+  @get('/Cliente/cursos/{id}')
+
+  async traerCursos(@param.path.string('id') id: string, ): Promise<Result<TbReceta[], Error>> {
+
+    var query = []
+    const admit: TbCliente = await this.tbClienteRepository.findById(id).catch(() => { return undefined })
+    if (admit === undefined) {
+      return err(new HttpErrors[400]('cliente no encontrado'))
+    }
+
+    if (admit.aRecetas === undefined || admit.aRecetas.length < 0) {
+      return ok([])
+    } else {
+      for (let index = 0; index < admit.aRecetas.length; index++) {
+
+
+        query.push({ _id: admit.aRecetas[index] })
+      }
+    }
+
+    const Receta: TbReceta[] = await this.tbRecetaRepository.find({
+      where: {
+        or: query
+      },
+    }).catch(() => { return undefined })
+
+    if (Receta === undefined) {
+      return ok([])
+    } else {
+      return ok(Receta)
+    }
+
+
+
+  }
+
   @get('/Cliente/eo')
 
   async me2()
