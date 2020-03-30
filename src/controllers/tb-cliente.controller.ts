@@ -17,6 +17,7 @@ import {
   del,
   requestBody,
   HttpErrors,
+  RestBindings,
 } from '@loopback/rest';
 import { inject } from '@loopback/core';
 
@@ -47,6 +48,9 @@ import { resultado } from './../Procesos/Resultado'
 
 //#endregion
 
+
+
+
 export class TbClienteController {
   constructor(
     @repository(TbRecetaRepository)
@@ -60,6 +64,7 @@ export class TbClienteController {
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
     public arrayPermissions: ArrayPermissionKeys = new ArrayPermissionKeys(),
+
   ) { }
 
   @post('/Cliente', {
@@ -286,31 +291,51 @@ export class TbClienteController {
 
 
   @get('/Cliente/token')
-  @authenticate('jwt')
-  async me(@inject(AuthenticationBindings.CURRENT_USER)
-  currentUser: UserProfile, ): Promise<UserProfile> {
-    console.log(currentUser)
+  //@authenticate('jwt')
+  async me(
+    //@inject(AuthenticationBindings.CURRENT_USER)
+    //currentUser: UserProfile,
+    //request: Request
+  ): Promise<boolean> {
+    //console.log(currentUser)
+
+
+    //console.log(this.request)
+    /*if (!request.headers.authorization) {
+      throw new HttpErrors.Unauthorized(`Authorization header not found.`);
+    }*/
+
+
+
 
     console.log(this.arrayPermissions)
-    return Promise.resolve(currentUser);
+    return Promise.resolve(true);
   }
 
 
-  @get('/Cliente/Ver/{id}')
+
+
+
+
+
+
+  @get('/Cliente/VerS/{id}')
   @authenticate('jwt')
-  async verReceta(@inject(AuthenticationBindings.CURRENT_USER)
-  currentUser: UserProfile,
+  async verRecetaExclusiva(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.path.string('id') id: string, ): Promise<Result<boolean, Error>> {
     //console.log(currentUser)
 
-    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser)
+    const admit: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser).catch(() => { return undefined })
     const Receta: TbReceta = await this.tbRecetaRepository.findById(id).catch(() => { return undefined })
 
     if (Receta === undefined) {
       return err(new HttpErrors[400]('receta no encontrada'))
     }
 
-    if ((Receta.iPrecio > 0) && (admit.aRecetas === undefined || admit.aRecetas.indexOf('' + Receta._id) === -1)) {
+    if ((Receta.iPrecio > 0) && ((admit === undefined) || (admit.aRecetas === undefined || admit.aRecetas.indexOf('' + Receta._id) === -1))) {
+
 
       return ok(false);
 
@@ -322,6 +347,29 @@ export class TbClienteController {
 
   }
 
+
+  @get('/Cliente/VerU/{id}')
+
+  async verReceta(@param.path.string('id') id: string, ): Promise<Result<boolean, Error>> {
+
+    const Receta: TbReceta = await this.tbRecetaRepository.findById(id).catch(() => { return undefined })
+
+    if (Receta === undefined) {
+      return err(new HttpErrors[400]('receta no encontrada'))
+    }
+
+    if (Receta.iPrecio > 0) {
+
+
+      return ok(false);
+
+    } else {
+      return ok(true);
+    }
+
+
+
+  }
 
   @get('/Cliente/eo')
 
