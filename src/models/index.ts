@@ -5,3 +5,4 @@ export * from './tb-factura.model';
 export * from './tb-receta.model';
 export * from './tb-historial.model';
 export * from './tb-cliente.model';
+export * from './pago.model';

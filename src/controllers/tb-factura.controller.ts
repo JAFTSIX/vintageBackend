@@ -22,7 +22,8 @@ import {
   TbFactura,
   TbArticulo,
   TbReceta,
-  TbCliente
+  TbCliente,
+  Pago
 } from '../models';
 import {
   TbFacturaRepository,
@@ -43,7 +44,7 @@ import { MyClientService } from '../Procesos/client-service';
 import { CredentialsRequestBody } from './specs/client.controller.spec';
 //var braintree = require('braintree');
 
-import { Environment, connect } from 'braintree';
+import { Environment, connect, PaymentMethodNonce, NonceDetails, Transaction } from 'braintree';
 import {
   TokenServiceBindings,
   UserServiceBindings,
@@ -52,6 +53,7 @@ import {
   ArrayPermissionKeys,
 } from '../keys';
 import { UserProfile } from '@loopback/security';
+import { resolve } from 'dns';
 
 
 export class TbFacturaController {
@@ -69,6 +71,12 @@ export class TbFacturaController {
 
 
 
+  private gateway: braintree.BraintreeGateway = connect({
+    environment: Environment.Sandbox,
+    merchantId: this.btkeys.merchantId,
+    publicKey: this.btkeys.publicKey,
+    privateKey: this.btkeys.privateKey
+  });
 
   @post('/Factura', {
     responses: {
@@ -82,32 +90,51 @@ export class TbFacturaController {
       },
     },
   })
-  async create(
+  @authenticate('jwt')
+  async create(@inject(AuthenticationBindings.CURRENT_USER)
+  currentUser: UserProfile,
     @requestBody({
       content: {
         'application/json': {
-          schema: getModelSchemaRef(TbFactura, {
-            title: 'NewTbFactura',
-            exclude: ['_id'],
+
+          schema: getModelSchemaRef(Pago, {
+            title: 'paguito',
+
           }),
         },
       },
-    }) tbFactura: Omit<TbFactura, '_id'>,
-  ): Promise<Result<TbFactura, Error>> {
+    }) pago: Pago,
+    // paymentMethodNonce: PaymentMethodNonce,
+  ): Promise<Result<braintree.ValidatedResponse<Transaction>, Error>> {
 
 
-
-
-
+    const tbFactura: TbFactura = plainToClass(TbFactura, pago.Factura);
+    //console.log(tbFactura)
     const resultado1 = await this.sePuedeComprar(tbFactura)
-    if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente))
+    if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente + ', no se compra'))
 
-    //hacer registtro
 
     const resultado2 = await this.Registrar_compra(tbFactura)
-    if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente))
+    if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente + ', no se compra'))
+    //hacer pago aqui
 
-    return ok(tbFactura)
+    const pay = pago.paymentMethodNonce
+
+
+    const newTransaction = await this.gateway.transaction.sale({
+      amount: '' + tbFactura.iTotal,
+      paymentMethodNonce: pay,
+      options: {
+        submitForSettlement: true
+      }
+    }).then(dataY => {
+
+      return dataY
+    }).catch(() => { return undefined })
+
+    if (newTransaction === undefined) return err(new HttpErrors[500]('problemas en braintree'))
+
+    return ok(newTransaction)
   }
 
 
@@ -129,14 +156,7 @@ export class TbFacturaController {
     currentUser: UserProfile,
   ): Promise<Result<braintree.ValidatedResponse<braintree.ClientToken>, Error>> {
 
-    const gateway: braintree.BraintreeGateway = connect({
-      environment: Environment.Sandbox,
-      merchantId: this.btkeys.merchantId,
-      publicKey: this.btkeys.publicKey,
-      privateKey: this.btkeys.privateKey
-    });
-
-    const e: braintree.ValidatedResponse<braintree.ClientToken> = await gateway.clientToken.generate({}).catch(() => { return undefined })
+    const e: braintree.ValidatedResponse<braintree.ClientToken> = await this.gateway.clientToken.generate({}).catch(() => { return undefined })
 
     if (e === undefined) return err(new HttpErrors[500]('problemas en braintree'))
 
@@ -369,7 +389,9 @@ export class TbFacturaController {
       });
 
       if (receta.length > 0) {
+
         if (cliente[0].aRecetas !== undefined && cliente[0].aRecetas.indexOf(elementoCarrito._id + "") !== -1) {
+
           respuesta = new resultado(false, 'esa receta ya está comprada');
           break;
         }
