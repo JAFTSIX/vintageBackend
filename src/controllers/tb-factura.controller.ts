@@ -111,15 +111,13 @@ export class TbFacturaController {
   }
 
 
-  @get('/Factura/BT', {
+  @get('/Factura/compra/BT', {
     responses: {
       '200': {
         description: 'TbFactura model instance',
         content: {
           'application/json': {
-            schema: getModelSchemaRef(TbFactura, {
-              includeRelations: true
-            }),
+
           },
         },
       },
@@ -129,7 +127,7 @@ export class TbFacturaController {
   async brain1(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
-  ): Promise<Result<string, Error>> {
+  ): Promise<Result<braintree.ValidatedResponse<braintree.ClientToken>, Error>> {
 
     const gateway: braintree.BraintreeGateway = connect({
       environment: Environment.Sandbox,
@@ -138,12 +136,12 @@ export class TbFacturaController {
       privateKey: this.btkeys.privateKey
     });
 
-    const e = await gateway.clientToken.generate({}).catch(() => { return undefined })
+    const e: braintree.ValidatedResponse<braintree.ClientToken> = await gateway.clientToken.generate({}).catch(() => { return undefined })
 
     if (e === undefined) return err(new HttpErrors[500]('problemas en braintree'))
 
 
-    return ok(e.clientToken);
+    return ok(e);
   }
 
 

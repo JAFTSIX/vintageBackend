@@ -349,7 +349,6 @@ export class TbClienteController {
 
 
   @get('/Cliente/VerU/{id}')
-
   async verReceta(@param.path.string('id') id: string, ): Promise<Result<boolean, Error>> {
 
     const Receta: TbReceta = await this.tbRecetaRepository.findById(id).catch(() => { return undefined })
