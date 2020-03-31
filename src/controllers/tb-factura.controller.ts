@@ -121,8 +121,11 @@ export class TbFacturaController {
     const pay = pago.paymentMethodNonce
 
 
+    console.log('tbFactura.iTotal', tbFactura.iTotal)
+    console.log('iTotal', tbFactura.iTotal.toString())
+    console.log('lenght', tbFactura.iTotal.toString().length)
     const newTransaction = await this.gateway.transaction.sale({
-      amount: '' + tbFactura.iTotal,
+      amount: tbFactura.iTotal.toString(),
       paymentMethodNonce: pay,
       options: {
         submitForSettlement: true
@@ -134,6 +137,7 @@ export class TbFacturaController {
 
     if (newTransaction === undefined) return err(new HttpErrors[500]('problemas en braintree'))
 
+    console.log('EN TEORIA')
     return ok(newTransaction)
   }
 
@@ -440,7 +444,11 @@ export class TbFacturaController {
       });
 
       if (articulo.length > 0) {
-        total = total + articulo[0].iPrecio * elementoCarrito.iCant;
+        total = total + (articulo[0].iPrecio * (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant));
+
+        console.log('(elementoCarrito.iCant <= 0 ? 1 :-----', (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant))
+        console.log('total', total)
+        console.log('cantidad,', elementoCarrito.iCant)
         articulo[0].iCant = articulo[0].iCant - elementoCarrito.iCant;
         await this.tbArticuloRepository.updateById(articulo[0]._id, articulo[0])
       } else x++
