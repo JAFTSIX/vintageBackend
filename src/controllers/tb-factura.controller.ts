@@ -374,8 +374,7 @@ export class TbFacturaController {
           respuesta = new resultado(false, 'insuficiente stock');
           break;
         }
-        if (elementoCarrito.iCant <= 0) {
-
+        if (!(elementoCarrito.iCant > 0)) {
           respuesta = new resultado(false, 'cantidad de articulo inválida');
           break;
 
