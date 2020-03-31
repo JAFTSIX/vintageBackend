@@ -35,10 +35,23 @@ import "es6-shim";
 import {
   plainToClass
 } from "class-transformer";
+import { inject } from '@loopback/core';
 import { ok, err, Result } from 'neverthrow'
 import { resultado } from './../Procesos/Resultado'
+import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
+import { MyClientService } from '../Procesos/client-service';
+import { CredentialsRequestBody } from './specs/client.controller.spec';
+//var braintree = require('braintree');
 
-
+import { Environment, connect } from 'braintree';
+import {
+  TokenServiceBindings,
+  UserServiceBindings,
+  PasswordHasherBindings,
+  BrainTreeKeys,
+  ArrayPermissionKeys,
+} from '../keys';
+import { UserProfile } from '@loopback/security';
 
 
 export class TbFacturaController {
@@ -47,6 +60,11 @@ export class TbFacturaController {
     @repository(TbClienteRepository) public tbClienteRepository: TbClienteRepository,
     @repository(TbArticuloRepository) public tbArticuloRepository: TbArticuloRepository,
     @repository(TbRecetaRepository) public tbRecetaRepository: TbRecetaRepository,
+    @inject(UserServiceBindings.USER_SERVICE)
+    public clientService: MyClientService,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,//public jwtService: JwtService,
+    public btkeys: BrainTreeKeys = new BrainTreeKeys(),
   ) { }
 
 
@@ -91,6 +109,44 @@ export class TbFacturaController {
 
     return ok(tbFactura)
   }
+
+
+  @get('/Factura/BT', {
+    responses: {
+      '200': {
+        description: 'TbFactura model instance',
+        content: {
+          'application/json': {
+            schema: getModelSchemaRef(TbFactura, {
+              includeRelations: true
+            }),
+          },
+        },
+      },
+    },
+  })
+  @authenticate('jwt')
+  async brain1(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+  ): Promise<Result<string, Error>> {
+
+    const gateway: braintree.BraintreeGateway = connect({
+      environment: Environment.Sandbox,
+      merchantId: this.btkeys.merchantId,
+      publicKey: this.btkeys.publicKey,
+      privateKey: this.btkeys.privateKey
+    });
+
+    const e = await gateway.clientToken.generate({}).catch(() => { return undefined })
+
+    if (e === undefined) return err(new HttpErrors[500]('problemas en braintree'))
+
+
+    return ok(e.clientToken);
+  }
+
+
 
   @get('/Factura/count', {
     responses: {

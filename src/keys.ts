@@ -131,3 +131,11 @@ export class ArrayPermissionKeys {
   }
 
 }
+export class BrainTreeKeys {
+
+  //environment: string = "braintree.Environment.Sandbox"
+  merchantId: string = '9gfqjffkspt8777n'
+  publicKey: string = '95w2v6gb6bgdrmwz'
+  privateKey: string = '68b004efeeff106dc0b8703dc482558c'
+
+}
