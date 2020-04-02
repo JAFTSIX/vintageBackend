@@ -449,7 +449,9 @@ export class TbFacturaController {
         console.log('(elementoCarrito.iCant <= 0 ? 1 :-----', (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant))
         console.log('total', total)
         console.log('cantidad,', elementoCarrito.iCant)
+
         articulo[0].iCant = articulo[0].iCant - elementoCarrito.iCant;
+
         await this.tbArticuloRepository.updateById(articulo[0]._id, articulo[0])
       } else x++
 
