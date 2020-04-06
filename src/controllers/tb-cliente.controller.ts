@@ -180,6 +180,7 @@ export class TbClienteController {
       },
     },
   })
+  @authenticate('jwt')
   async findById(
     @param.path.string('id') id: string,
     @param.query.object('filter', getFilterSchemaFor(TbCliente))
