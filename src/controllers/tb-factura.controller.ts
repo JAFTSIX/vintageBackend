@@ -107,38 +107,43 @@ export class TbFacturaController {
     // paymentMethodNonce: PaymentMethodNonce,
   ): Promise<Result<braintree.ValidatedResponse<Transaction>, Error>> {
 
+    //recetaOProducto: 0  0=producto
+    const tbCliente: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser).catch(() => { return undefined });
+
 
     const tbFactura: TbFactura = plainToClass(TbFactura, pago.Factura);
     //console.log(tbFactura)
-    const resultado1 = await this.sePuedeComprar(tbFactura)
-    if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente + ', no se compra'))
+    const resultado1 = await this.sePuedeComprar(tbFactura, tbCliente);
+    if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente + ', no se compra'));
 
 
-    const resultado2 = await this.Registrar_compra(tbFactura)
-    if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente + ', no se compra'))
-    //hacer pago aqui
 
-    const pay = pago.paymentMethodNonce
+    //console.log('tbFactura.iTotal', tbFactura.iTotal)
+    //console.log('iTotal', tbFactura.iTotal.toString())
 
-
-    console.log('tbFactura.iTotal', tbFactura.iTotal)
-    console.log('iTotal', tbFactura.iTotal.toString())
-    console.log('lenght', tbFactura.iTotal.toString().length)
     const newTransaction = await this.gateway.transaction.sale({
       amount: tbFactura.iTotal.toString(),
-      paymentMethodNonce: pay,
+      paymentMethodNonce: pago.paymentMethodNonce,
       options: {
         submitForSettlement: true
       }
     }).then(dataY => {
-
-      return dataY
+      return dataY;
     }).catch(() => { return undefined })
 
-    if (newTransaction === undefined) return err(new HttpErrors[500]('problemas en braintree'))
+    if (newTransaction === undefined) return err(new HttpErrors[500]('problemas en braintree'));
 
-    console.log('EN TEORIA')
-    return ok(newTransaction)
+    if (newTransaction.success) {
+      const resultado2 = await this.Registrar_compra(tbFactura, tbCliente);
+      if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente + ', no se compra'));
+
+    } else {
+      return err(new HttpErrors[500]('problemas en la transaccion pongase en contacto con su banco o intente de nuevo'));
+    }
+
+    //console.log('compras', tbFactura.aCompras);
+    //console.log('EN TEORIA');
+    return ok(newTransaction);
   }
 
 
@@ -350,18 +355,16 @@ export class TbFacturaController {
    * @var recetas_del_cliente   if==0 entonces
    * @returns boolean
    */
-  async sePuedeComprar(tbFactura: TbFactura): Promise<resultado> {
+  async sePuedeComprar(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
 
     var respuesta = new resultado(true, 'todo bien')
 
-    const cliente = await this.tbClienteRepository.find({
-      where: {
-        _id: '' + tbFactura.sCliente,
-      },
-    });
+    const aCompras: object[] = [];
 
-    //si el cliente existe
-    if (cliente.length > 0) for (let index = 0; index < tbFactura.aCompras.length; index++) {
+    var total = 0;
+
+
+    for (let index = 0; index < tbFactura.aCompras.length; index++) {
 
       var x = 0
       const elementoCarrito: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
@@ -383,6 +386,9 @@ export class TbFacturaController {
           break;
 
         }
+        total = total + (articulo[0].iPrecio * (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant));
+        aCompras.push(articulo);
+
       } else x++
 
       const receta = await this.tbRecetaRepository.find({
@@ -393,20 +399,22 @@ export class TbFacturaController {
 
       if (receta.length > 0) {
 
-        if (cliente[0].aRecetas !== undefined && cliente[0].aRecetas.indexOf(elementoCarrito._id + "") !== -1) {
+        if (tbCliente.aRecetas !== undefined && tbCliente.aRecetas.indexOf(elementoCarrito._id + "") !== -1) {
 
           respuesta = new resultado(false, 'esa receta ya está comprada');
           break;
         }
-
-
+        total = total + elementoCarrito.iPrecio;
+        aCompras.push(receta);
       } else x++
 
-      if (x === 2) respuesta = new resultado(false, 'elemento no encontrado')
+      if (x === 2) respuesta = new resultado(false, 'elemento no encontrado');
 
     }
-    else { respuesta = new resultado(false, 'cliente no encontrado') }
 
+    tbFactura.aCompras = aCompras;
+
+    tbFactura.iTotal = total;
     return respuesta
   }
 
@@ -421,19 +429,14 @@ export class TbFacturaController {
    * @returns resultado
    *
    */
-  async Registrar_compra(tbFactura: TbFactura): Promise<resultado> {
+  async Registrar_compra(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
 
     var respuesta = new resultado(true, 'todo bien')
 
-    //si el cliente existe
-    var impuesto = 0;
-    var total = 0;
-
-    tbFactura.aCompras
 
     for (let index = 0; index < tbFactura.aCompras.length; index++) {
 
-      var x = 0
+
 
       const elementoCarrito: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
 
@@ -444,47 +447,24 @@ export class TbFacturaController {
       });
 
       if (articulo.length > 0) {
-        total = total + (articulo[0].iPrecio * (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant));
-
-        console.log('(elementoCarrito.iCant <= 0 ? 1 :-----', (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant))
-        console.log('total', total)
-        console.log('cantidad,', elementoCarrito.iCant)
 
         articulo[0].iCant = articulo[0].iCant - elementoCarrito.iCant;
-
         await this.tbArticuloRepository.updateById(articulo[0]._id, articulo[0])
-      } else x++
+      } else {
 
-      const receta = await this.tbRecetaRepository.find({
-        where: {
-          _id: '' + elementoCarrito._id,
-        },
-      });
 
-      if (receta.length > 0) {
-        total = total + elementoCarrito.iPrecio;
-
-        const cliente = await this.tbClienteRepository.find({
-          where: {
-            _id: '' + tbFactura.sCliente,
-          },
-        });
-
-        cliente[0].aRecetas?.push(elementoCarrito._id + '');
-        await this.tbClienteRepository.updateById(tbFactura.sCliente, cliente[0]);
-      } else x++
-
-      if (x === 2) respuesta = new resultado(false, 'elemento no encontrado')
+        tbCliente.aRecetas?.push(elementoCarrito._id + '');
+        await this.tbClienteRepository.updateById(tbFactura.sCliente, tbCliente);
+      }
 
     };
-
-    //sacar el iva
-    tbFactura.iTotal = total
-
 
     await this.tbFacturaRepository.create(tbFactura)
 
     return respuesta
   }
+
+
+
 }
 

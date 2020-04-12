@@ -43,7 +43,7 @@ import {
 } from '../keys';
 import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
 
-import { ok, err, Result } from 'neverthrow'
+import { ok, err, Result, Err } from 'neverthrow'
 import { resultado } from './../Procesos/Resultado'
 
 //#endregion
@@ -206,8 +206,19 @@ export class TbClienteController {
       },
     })
     tbCliente: TbCliente,
-  ): Promise<void> {
-    await this.tbClienteRepository.updateById(id, tbCliente);
+  ): Promise<Result<TbCliente, Error>> {
+
+    var success = true
+
+    await this.tbClienteRepository.updateById(id, tbCliente).catch(() => { success = false });
+
+
+    if (success) {
+      return ok(tbCliente)
+    } else {
+      return err(new HttpErrors.UnprocessableEntity('error al actualizar cliente'))
+    }
+
   }
 
   @put('/Cliente/{id}', {
