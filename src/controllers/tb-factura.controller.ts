@@ -400,7 +400,7 @@ export class TbFacturaController {
 
       if (receta.length > 0) {
 
-        if (tbCliente.aRecetas !== undefined && tbCliente.aRecetas.indexOf(elementoCarrito._id + "") !== -1) {
+        if (tbCliente.aRecetas !== undefined && tbCliente.aRecetas.indexOf(receta[0]._id + "") !== -1) {
 
           respuesta = new resultado(false, 'esa receta ya está comprada');
           break;
