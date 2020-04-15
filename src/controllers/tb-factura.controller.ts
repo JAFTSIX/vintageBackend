@@ -387,6 +387,7 @@ export class TbFacturaController {
 
         }
         total = total + (articulo[0].iPrecio * (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant));
+        articulo[0].iCant = elementoCarrito.iCant
         aCompras.push(articulo[0]);
 
       } else x++
