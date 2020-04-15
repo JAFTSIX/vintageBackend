@@ -109,7 +109,7 @@ export class TbFacturaController {
 
     //recetaOProducto: 0  0=producto
     const tbCliente: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser).catch(() => { return undefined });
-
+    if (tbCliente === undefined) return err(new HttpErrors.UnprocessableEntity('cliente  , no se compra'));
 
     const tbFactura: TbFactura = plainToClass(TbFactura, pago.Factura);
     //console.log(tbFactura)
@@ -359,7 +359,7 @@ export class TbFacturaController {
 
     var respuesta = new resultado(true, 'todo bien')
 
-    const aCompras: object[] = [];
+    const aCompras = [];
 
     var total = 0;
 
@@ -387,7 +387,7 @@ export class TbFacturaController {
 
         }
         total = total + (articulo[0].iPrecio * (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant));
-        aCompras.push(articulo);
+        aCompras.push(articulo[0]);
 
       } else x++
 
@@ -405,7 +405,7 @@ export class TbFacturaController {
           break;
         }
         total = total + elementoCarrito.iPrecio;
-        aCompras.push(receta);
+        aCompras.push(receta[0]);
       } else x++
 
       if (x === 2) respuesta = new resultado(false, 'elemento no encontrado');

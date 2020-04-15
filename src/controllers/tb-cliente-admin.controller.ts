@@ -70,7 +70,10 @@ export class TbClienteAdminController {
     );
 
 
-    //    tbCliente.aPermisos = [this.permisos.Cliente.create, this.permisos.Cliente.find, this.permisos.Cliente.updateById,];
+    /*tbCliente.aPermisos = [...this.permisos.Cliente.getArray(), ...this.permisos.Articulo.getArray(),
+    ...this.permisos.Categoria.getArray(), ...this.permisos.Factura.getArray(),
+    ...this.permisos.Historial.getArray(), ...this.permisos.Receta.getArray(),
+    this.permisos.manage.Cliente, this.permisos.manage.Himself, this.permisos.manage.admin];*/
     tbCliente.bAdmin = true;
 
     const saved = await this.tbClienteRepository.create(tbCliente);
