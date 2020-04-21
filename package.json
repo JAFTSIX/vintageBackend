@@ -57,6 +57,7 @@
     "@loopback/service-proxy": "^1.3.17",
     "@types/bcryptjs": "^2.4.2",
     "@types/braintree": "^2.22.0",
+    "@types/nodemailer": "^6.4.0",
     "bcryptjs": "^2.4.3",
     "braintree": "^2.22.0",
     "class-transformer": "^0.2.3",
@@ -64,6 +65,7 @@
     "jsonwebtoken": "^8.5.1",
     "loopback-connector-mongodb": "^4.2.0",
     "neverthrow": "^2.2.0",
+    "nodemailer": "^6.4.6",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {

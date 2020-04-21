@@ -32,6 +32,8 @@ import debug from 'debug';
 
 import { BcyptHasher } from '../Procesos/hash.password.bcrypt';
 import { MyClientService } from '../Procesos/client-service';
+import { MyMailService } from '../Procesos/sendMail';
+
 import { CredentialsRequestBody } from './specs/client.controller.spec';
 import { JwtService } from '../Procesos/jwt-service';
 import {
@@ -102,6 +104,7 @@ export class TbClienteController {
     );
 
     tbCliente.aPermisos = [this.arrayPermissions.AccessAuthFeature];
+    //tbCliente.bActivo = false;
     const saved = await this.tbClienteRepository.create(tbCliente);
     delete saved.sContrasena;
 
@@ -283,10 +286,13 @@ export class TbClienteController {
       console.log(credentials);
       const cliente = await this.clientService.verifyCredentials(credentials)//.catch(err=>{ return err(new Error('asd'))});
       //console.log(cliente);
-
+      //    if (!cliente.bActivo) {
+      //       return err(new HttpErrors.Unauthorized("esta cuenta no está verificada"))
+      //    }
 
       const UserProfile = this.clientService.convertToUserProfile(cliente);
       //console.log(UserProfile);
+
 
 
       const token = await this.jwtService.generateToken(UserProfile);
@@ -423,6 +429,7 @@ export class TbClienteController {
 
   async me2()
     : Promise<string> {
+
 
 
     console.log(this.arrayPermissions)

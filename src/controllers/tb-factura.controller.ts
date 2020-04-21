@@ -41,6 +41,7 @@ import { ok, err, Result } from 'neverthrow'
 import { resultado } from './../Procesos/Resultado'
 import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
 import { MyClientService } from '../Procesos/client-service';
+import { MyMailService } from '../Procesos/sendMail';
 import { CredentialsRequestBody } from './specs/client.controller.spec';
 //var braintree = require('braintree');
 
@@ -136,7 +137,7 @@ export class TbFacturaController {
     if (newTransaction.success) {
       const resultado2 = await this.Registrar_compra(tbFactura, tbCliente);
       if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente + ', no se compra'));
-
+      await new MyMailService().factura(tbFactura, tbCliente);
     } else {
       return err(new HttpErrors[500]('problemas en la transaccion pongase en contacto con su banco o intente de nuevo'));
     }
@@ -311,19 +312,6 @@ export class TbFacturaController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.tbFacturaRepository.deleteById(id);
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
