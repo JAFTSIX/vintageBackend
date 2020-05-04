@@ -8,10 +8,10 @@ import {
 import { post, getModelSchemaRef, requestBody, HttpErrors } from "@loopback/rest";
 import { TbCliente } from "../models";
 import { inject } from '@loopback/core';
-import { PasswordHasherBindings, ArrayPermissionKeys } from '../keys';
+import { PasswordHasherBindings } from '../keys';
 import { TbClienteRepository } from '../repositories';
-import { BcyptHasher } from '../Procesos/hash.password.bcrypt';
-import Validar = require('../Procesos/validar');
+import { BcyptHasher } from '../Services/hash.password.bcrypt';
+import Validar = require('../Services/Format');
 
 import { ok, err, Result } from 'neverthrow'
 
@@ -26,7 +26,7 @@ export class TbClienteAdminController {
     public tbClienteRepository: TbClienteRepository,
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public hasher: BcyptHasher,
-    public permisos: ArrayPermissionKeys = new ArrayPermissionKeys()
+
   ) { }
 
 
@@ -77,7 +77,7 @@ export class TbClienteAdminController {
     tbCliente.bAdmin = true;
 
     const saved = await this.tbClienteRepository.create(tbCliente);
-    delete saved.sContrasena;
+    //delete saved.sContrasena;
     return ok(saved);
   }
 

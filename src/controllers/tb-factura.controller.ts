@@ -1,6 +1,5 @@
 import {
   Count,
-  CountSchema,
   Filter,
   repository,
   Where,
@@ -23,7 +22,7 @@ import {
   TbArticulo,
   TbReceta,
   TbCliente,
-  Pago
+  Payment,
 } from '../models';
 import {
   TbFacturaRepository,
@@ -37,25 +36,36 @@ import {
   plainToClass
 } from "class-transformer";
 import { inject } from '@loopback/core';
-import { ok, err, Result } from 'neverthrow'
-import { resultado } from './../Procesos/Resultado'
-import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
-import { MyClientService } from '../Procesos/client-service';
-import { MyMailService } from '../Procesos/sendMail';
-import { CredentialsRequestBody } from './specs/client.controller.spec';
-//var braintree = require('braintree');
-
-import { Environment, connect, PaymentMethodNonce, NonceDetails, Transaction } from 'braintree';
+import { ok, err, Result, Err } from 'neverthrow'
+import { resultado } from '../Services/Result'
+import { TokenService, authenticate, AuthenticationBindings } from '@loopback/authentication';
+import { MyClientService } from '../Services/client-service';
+import { MyMailService } from '../Services/sendMail';
+import { Environment, connect, Transaction } from 'braintree';
 import {
   TokenServiceBindings,
   UserServiceBindings,
-  PasswordHasherBindings,
   BrainTreeKeys,
-  ArrayPermissionKeys,
 } from '../keys';
 import { UserProfile } from '@loopback/security';
 import { resolve } from 'dns';
 
+import {
+  TbFacturaRequest,
+  TbFacturaResponses
+} from '../bodies/tb-factura.responses';
+
+
+import {
+  constants
+} from './../authorization.constants'
+
+import {
+  Authorization
+} from '../Services/authorization';
+
+const Responses: TbFacturaResponses = new TbFacturaResponses();
+const Request: TbFacturaRequest = new TbFacturaRequest();
 
 export class TbFacturaController {
   constructor(
@@ -68,6 +78,7 @@ export class TbFacturaController {
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
     public btkeys: BrainTreeKeys = new BrainTreeKeys(),
+    public pass: Authorization,
   ) { }
 
 
@@ -79,32 +90,12 @@ export class TbFacturaController {
     privateKey: this.btkeys.privateKey
   });
 
-  @post('/Factura', {
-    responses: {
-      '200': {
-        description: 'TbFactura model instance',
-        content: {
-          'application/json': {
-            schema: getModelSchemaRef(TbFactura)
-          }
-        },
-      },
-    },
-  })
+  @post('/Factura', Responses.create)
   @authenticate('jwt')
-  async create(@inject(AuthenticationBindings.CURRENT_USER)
-  currentUser: UserProfile,
-    @requestBody({
-      content: {
-        'application/json': {
-
-          schema: getModelSchemaRef(Pago, {
-            title: 'paguito',
-
-          }),
-        },
-      },
-    }) pago: Pago,
+  async create(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @requestBody(Request.create) payment: Payment,
     // paymentMethodNonce: PaymentMethodNonce,
   ): Promise<Result<braintree.ValidatedResponse<Transaction>, Error>> {
 
@@ -112,9 +103,9 @@ export class TbFacturaController {
     const tbCliente: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser).catch(() => { return undefined });
     if (tbCliente === undefined) return err(new HttpErrors.UnprocessableEntity('cliente  , no se compra'));
 
-    const tbFactura: TbFactura = plainToClass(TbFactura, pago.Factura);
+    const tbFactura: TbFactura = plainToClass(TbFactura, payment.Factura);
     //console.log(tbFactura)
-    const resultado1 = await this.sePuedeComprar(tbFactura, tbCliente);
+    const resultado1 = await this.canBuy(tbFactura, tbCliente);
     if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente + ', no se compra'));
 
 
@@ -124,7 +115,7 @@ export class TbFacturaController {
 
     const newTransaction = await this.gateway.transaction.sale({
       amount: tbFactura.iTotal.toString(),
-      paymentMethodNonce: pago.paymentMethodNonce,
+      paymentMethodNonce: payment.paymentMethodNonce,
       options: {
         submitForSettlement: true
       }
@@ -135,7 +126,7 @@ export class TbFacturaController {
     if (newTransaction === undefined) return err(new HttpErrors[500]('problemas en braintree'));
 
     if (newTransaction.success) {
-      const resultado2 = await this.Registrar_compra(tbFactura, tbCliente);
+      const resultado2 = await this.buy(tbFactura, tbCliente);
       if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente + ', no se compra'));
       await new MyMailService().factura(tbFactura, tbCliente);
     } else {
@@ -148,169 +139,122 @@ export class TbFacturaController {
   }
 
 
-  @get('/Factura/compra/BT', {
-    responses: {
-      '200': {
-        description: 'TbFactura model instance',
-        content: {
-          'application/json': {
-
-          },
-        },
-      },
-    },
-  })
+  @get('/Factura/compra/BT', Responses.BraintreeTokenGenerator)
   @authenticate('jwt')
-  async brain1(
+  async BraintreeTokenGenerator(
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
   ): Promise<Result<braintree.ValidatedResponse<braintree.ClientToken>, Error>> {
 
-    const e: braintree.ValidatedResponse<braintree.ClientToken> = await this.gateway.clientToken.generate({}).catch(() => { return undefined })
+    const ClientToken: braintree.ValidatedResponse<braintree.ClientToken> = await this.gateway.clientToken.generate({}).catch(() => { return undefined })
 
-    if (e === undefined) return err(new HttpErrors[500]('problemas en braintree'))
+    if (ClientToken === undefined) return err(new HttpErrors[500]('problemas en braintree'))
 
 
-    return ok(e);
+    return ok(ClientToken);
   }
 
 
 
-  @get('/Factura/count', {
-    responses: {
-      '200': {
-        description: 'TbFactura model count',
-        content: {
-          'application/json': {
-            schema: CountSchema
-          }
-        },
-      },
-    },
-  })
+  @get('/Factura/count', Responses.count)
+  @authenticate('jwt')
   async count(
     @param.query.object('where', getWhereSchemaFor(TbFactura)) where?: Where<TbFactura>,
-  ): Promise<Count> {
-    return this.tbFacturaRepository.count(where);
+  ): Promise<Result<Count, Error>> {
+
+    return ok(await this.tbFacturaRepository.count(where));
   }
 
-  @get('/Factura', {
-    responses: {
-      '200': {
-        description: 'Array of TbFactura model instances',
-        content: {
-          'application/json': {
-            schema: {
-              type: 'array',
-              items: getModelSchemaRef(TbFactura, {
-                includeRelations: true
-              }),
-            },
-          },
-        },
-      },
-    },
-  })
+  @get('/Factura', Responses.find)
+  @authenticate('jwt')
   async find(
     @param.query.object('filter', getFilterSchemaFor(TbFactura)) filter?: Filter<TbFactura>,
-  ): Promise<TbFactura[]> {
+  ): Promise<Result<TbFactura[], Error>> {
 
-    return this.tbFacturaRepository.find(filter);
+    const list = await this.tbFacturaRepository.find(filter).catch(() => { return undefined })
+    if (list === undefined) return err(new HttpErrors[404]("error al buscar"));
+    return ok(list);
   }
 
-  @patch('/Factura', {
-    responses: {
-      '200': {
-        description: 'TbFactura PATCH success count',
-        content: {
-          'application/json': {
-            schema: CountSchema
-          }
-        },
-      },
-    },
-  })
+  @patch('/Factura', Responses.updateAll)
+  @authenticate('jwt')
   async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(TbFactura, {
-            partial: true
-          }),
-        },
-      },
-    }) tbFactura: TbFactura,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @requestBody(Request.updateAll) tbFactura: TbFactura,
     @param.query.object('where', getWhereSchemaFor(TbFactura)) where?: Where<TbFactura>,
-  ): Promise<Count> {
-    return this.tbFacturaRepository.updateAll(tbFactura, where);
+  ): Promise<Result<Count, Error>> {
+    if (await this.pass.isUnauthorized(constants.context.factura, constants.action.updateAll, currentUser))
+      return err(new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación"));
+
+    return ok(await this.tbFacturaRepository.updateAll(tbFactura, where));
   }
 
-  @get('/Factura/{id}', {
-    responses: {
-      '200': {
-        description: 'TbFactura model instance',
-        content: {
-          'application/json': {
-            schema: getModelSchemaRef(TbFactura, {
-              includeRelations: true
-            }),
-          },
-        },
-      },
-    },
-  })
+  @get('/Factura/{id}', Responses.findById)
+  @authenticate('jwt')
   async findById(
+
     @param.path.string('id') id: string,
     @param.query.object('filter', getFilterSchemaFor(TbFactura)) filter?: Filter<TbFactura>
-  ): Promise<TbFactura> {
-    return this.tbFacturaRepository.findById(id, filter);
+  ): Promise<Result<TbFactura, Error>> {
+
+    return ok(await this.tbFacturaRepository.findById(id, filter));
   }
 
-  @patch('/Factura/{id}', {
-    responses: {
-      '204': {
-        description: 'TbFactura PATCH success',
-      },
-    },
-  })
+  @patch('/Factura/{id}', Responses.updateById)
+  @authenticate('jwt')
   async updateById(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.path.string('id') id: string,
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(TbFactura, {
-            partial: true
-          }),
-        },
-      },
-    }) tbFactura: TbFactura,
+    @requestBody(Request.updateById) tbFactura: TbFactura,
   ): Promise<void> {
-    await this.tbFacturaRepository.updateById(id, tbFactura);
+    try {
+      if (await this.pass.isUnauthorized(constants.context.factura, constants.action.updateById, currentUser))
+        throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
+      await this.tbFacturaRepository.updateById(id, tbFactura);
+      Promise.resolve;
+    } catch (error) {
+      Promise.reject;
+    }
+
   }
 
-  @put('/Factura/{id}', {
-    responses: {
-      '204': {
-        description: 'TbFactura PUT success',
-      },
-    },
-  })
+  @put('/Factura/{id}', Responses.replaceById)
+  @authenticate('jwt')
   async replaceById(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.path.string('id') id: string,
     @requestBody() tbFactura: TbFactura,
   ): Promise<void> {
-    await this.tbFacturaRepository.replaceById(id, tbFactura);
+    try {
+      if (await this.pass.isUnauthorized(constants.context.factura, constants.action.replaceById, currentUser))
+        throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
+      await this.tbFacturaRepository.replaceById(id, tbFactura);
+      Promise.resolve;
+    } catch (error) {
+      Promise.reject;
+    }
+
   }
 
-  @del('/Factura/{id}', {
-    responses: {
-      '204': {
-        description: 'TbFactura DELETE success',
-      },
-    },
-  })
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.tbFacturaRepository.deleteById(id);
+  @del('/Factura/{id}', Responses.deleteById)
+  @authenticate('jwt')
+  async deleteById(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
+    @param.path.string('id') id: string): Promise<void> {
+    try {
+      if (await this.pass.isUnauthorized(constants.context.factura, constants.action.deleteById, currentUser))
+        throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
+
+      await this.tbFacturaRepository.deleteById(id);
+      Promise.resolve
+    } catch (error) {
+      Promise.reject;
+    }
+
   }
 
 
@@ -343,7 +287,7 @@ export class TbFacturaController {
    * @var recetas_del_cliente   if==0 entonces
    * @returns boolean
    */
-  async sePuedeComprar(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
+  async canBuy(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
 
     var respuesta = new resultado(true, 'todo bien')
 
@@ -418,7 +362,7 @@ export class TbFacturaController {
    * @returns resultado
    *
    */
-  async Registrar_compra(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
+  async buy(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
 
     var respuesta = new resultado(true, 'todo bien')
 

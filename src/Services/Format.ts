@@ -1,6 +1,6 @@
 import { TbCliente } from '../models';
 import { TbClienteRepository } from '../repositories';
-import { resultado } from './Resultado'
+import { resultado } from './Result'
 
 //#region Expresiones regulares
 

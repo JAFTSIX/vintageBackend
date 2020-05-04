@@ -2,7 +2,7 @@ import { Model, model, property } from '@loopback/repository';
 import { TbFactura } from './tb-factura.model';
 
 @model({ settings: { strict: false } })
-export class Pago extends Model {
+export class Payment extends Model {
   @property({
     type: 'object',
     required: true,
@@ -21,13 +21,13 @@ export class Pago extends Model {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [prop: string]: any;
 
-  constructor(data?: Partial<Pago>) {
+  constructor(data?: Partial<Payment>) {
     super(data);
   }
 }
 
-export interface PagoRelations {
+export interface PaymentRelations {
   // describe navigational properties here
 }
 
-export type PagoWithRelations = Pago & PagoRelations;
+export type PaymentWithRelations = Payment & PaymentRelations;

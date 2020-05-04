@@ -18,7 +18,7 @@ export class MyMailService {
 
     var fact: TbFactura = factura;
     delete fact._id;
-    delete fact.sCliente;
+    // delete fact.sCliente;
 
     var text = JSON.stringify(fact);
 

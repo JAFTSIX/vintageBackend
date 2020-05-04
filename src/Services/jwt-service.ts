@@ -21,6 +21,8 @@ export class JwtService implements TokenService {
         `Error verifying token: 'token' is null`,
       );
     }
+    //revisar que el token esta en la base de datos
+
 
     let userProfile: UserProfile;
 
@@ -33,6 +35,12 @@ export class JwtService implements TokenService {
         { [securityId]: decryptedToken[securityId], name: decryptedToken.name, email: decryptedToken.email },
       );
     } catch (error) {
+
+      if (error.message === 'jwt expired') {
+        //anular token
+        //borrar de la base de datos
+        this.destroyToken(token)
+      }
       throw new HttpErrors.Unauthorized(
         `Error verifying token: ${error.message}`,
       );

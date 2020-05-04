@@ -9,9 +9,9 @@ import { RestApplication } from '@loopback/rest';
 import { ServiceMixin } from '@loopback/service-proxy';
 import path from 'path';
 import { MySequence } from './sequence';
-import { BcyptHasher } from './Procesos/hash.password.bcrypt';
-import { MyClientService } from './Procesos/client-service';
-import { JwtService } from './Procesos/jwt-service';
+import { BcyptHasher } from './Services/hash.password.bcrypt';
+import { MyClientService } from './Services/client-service';
+import { JwtService } from './Services/jwt-service';
 import {
   TokenServiceConstant,
   TokenServiceBindings,
@@ -19,7 +19,7 @@ import {
   UserServiceBindings,
 } from './keys';
 import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
-import { JWTStrategy } from './/Procesos/jwt-strategy'
+import { JWTStrategy } from './Services/jwt-strategy'
 
 export class VintageBackendApp extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
