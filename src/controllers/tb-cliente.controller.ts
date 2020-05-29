@@ -205,7 +205,9 @@ export class TbClienteController {
   async activateAccount(
     @param.path.string('id') token: string,
   ): Promise<Result<string, Error>> {
+
     try {
+
       const userProfile = await this.jwtService.verifyToken(token)
       const client = await this.clientService.UserProfileToTbCliente(userProfile);
       client.bActivo = true
@@ -226,19 +228,24 @@ export class TbClienteController {
 
 
 
-  @get('/Cliente/token')
-  async me(
+  @get('/logout')
+  async logout(
     @param.header.string('Authorization') token: any
-  ): Promise<boolean> {
-    //console.log(currentUser)
+  ): Promise<void> {
+    token = token.split(' ')[1]
+    try {
+      var tbToken = await this.tbTokensRepository.find({
+        where: {
+          token: '' + token,
+        },
+      });
+      await this.tbTokensRepository.deleteById(tbToken[0]._id);
+    } catch (error) {
+      Promise.reject;
+    }
 
 
-    //console.log(this.request)
-    /*if (!request.headers.authorization) {
-      throw new HttpErrors.Unauthorized(`Authorization header not found.`);
-    }*/
-
-    return Promise.resolve(true);
+    Promise.resolve;
   }
 
 
