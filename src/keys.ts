@@ -12,6 +12,18 @@ export namespace TokenServiceConstant {
   export const TOKEN_EXPIRES_IN_VALUE = '6h';
 }
 
+
+export namespace TokenAction {
+  export enum ACTION {
+
+    login = 0,
+    recover = 1,
+    Activate = 2,
+
+  };
+
+}
+
 export namespace TokenServiceBindings {
   export const TOKEN_SECRET = BindingKey.create<string>(
     'authentication.jwt.secret',

@@ -23,6 +23,14 @@ export class TbTokens extends Entity {
   })
   token: string;
 
+  @property({
+    type: 'number',
+    required: true,
+  })
+  iTipo: number;
+  /*0=login
+  1=recuperar
+  2=activar*/
   // Define well-known properties here
 
   // Indexer property to allow additional data

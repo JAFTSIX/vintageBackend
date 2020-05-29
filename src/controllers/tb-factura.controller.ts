@@ -37,10 +37,10 @@ import {
 } from "class-transformer";
 import { inject } from '@loopback/core';
 import { ok, err, Result, Err } from 'neverthrow'
-import { resultado } from '../Services/Result'
+import { occur } from '../Services/Occur'
 import { TokenService, authenticate, AuthenticationBindings } from '@loopback/authentication';
 import { MyClientService } from '../Services/client-service';
-import { MyMailService } from '../Services/sendMail';
+import { MyMailService } from '../Services/mail-service';
 import { Environment, connect, Transaction } from 'braintree';
 import {
   TokenServiceBindings,
@@ -96,17 +96,16 @@ export class TbFacturaController {
     @inject(AuthenticationBindings.CURRENT_USER)
     currentUser: UserProfile,
     @requestBody(Request.create) payment: Payment,
-    // paymentMethodNonce: PaymentMethodNonce,
   ): Promise<Result<braintree.ValidatedResponse<Transaction>, Error>> {
 
-    //recetaOProducto: 0  0=producto
+
     const tbCliente: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser).catch(() => { return undefined });
     if (tbCliente === undefined) return err(new HttpErrors.UnprocessableEntity('cliente  , no se compra'));
 
     const tbFactura: TbFactura = plainToClass(TbFactura, payment.Factura);
-    //console.log(tbFactura)
-    const resultado1 = await this.canBuy(tbFactura, tbCliente);
-    if (!resultado1.valido) return err(new HttpErrors.UnprocessableEntity(resultado1.incidente + ', no se compra'));
+
+    const result1 = await this.canBuy(tbFactura, tbCliente);
+    if (!result1.valid) return err(new HttpErrors.UnprocessableEntity(result1.incident + ', no se compra'));
 
 
 
@@ -126,9 +125,9 @@ export class TbFacturaController {
     if (newTransaction === undefined) return err(new HttpErrors[500]('problemas en braintree'));
 
     if (newTransaction.success) {
-      const resultado2 = await this.buy(tbFactura, tbCliente);
-      if (!resultado2.valido) return err(new HttpErrors.UnprocessableEntity(resultado2.incidente + ', no se compra'));
-      await new MyMailService().factura(tbFactura, tbCliente);
+      const result2 = await this.buy(tbFactura, tbCliente);
+      if (!result2.valid) return err(new HttpErrors.UnprocessableEntity(result2.incident + ', no se compra'));
+      await new MyMailService().invoice(tbFactura, tbCliente);
     } else {
       return err(new HttpErrors[500]('problemas en la transaccion pongase en contacto con su banco o intente de nuevo'));
     }
@@ -220,45 +219,6 @@ export class TbFacturaController {
 
   }
 
-  @put('/Factura/{id}', Responses.replaceById)
-  @authenticate('jwt')
-  async replaceById(
-    @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
-    @param.path.string('id') id: string,
-    @requestBody() tbFactura: TbFactura,
-  ): Promise<void> {
-    try {
-      if (await this.pass.isUnauthorized(constants.context.factura, constants.action.replaceById, currentUser))
-        throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-      await this.tbFacturaRepository.replaceById(id, tbFactura);
-      Promise.resolve;
-    } catch (error) {
-      Promise.reject;
-    }
-
-  }
-
-  @del('/Factura/{id}', Responses.deleteById)
-  @authenticate('jwt')
-  async deleteById(
-    @inject(AuthenticationBindings.CURRENT_USER)
-    currentUser: UserProfile,
-    @param.path.string('id') id: string): Promise<void> {
-    try {
-      if (await this.pass.isUnauthorized(constants.context.factura, constants.action.deleteById, currentUser))
-        throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-
-      await this.tbFacturaRepository.deleteById(id);
-      Promise.resolve
-    } catch (error) {
-      Promise.reject;
-    }
-
-  }
-
-
-
 
 
 
@@ -278,7 +238,7 @@ export class TbFacturaController {
    * traigo el cliente -si existe
    * me fijo que id de recetas es legítimo
    * reviso su array de recetas
-   * si en ese array esta elementoCarrito._id entonces tira error
+   * si en ese array esta cartElement._id entonces tira error
    *
    *
    * extra averiguar si el elemnto tenia un id real
@@ -287,9 +247,9 @@ export class TbFacturaController {
    * @var recetas_del_cliente   if==0 entonces
    * @returns boolean
    */
-  async canBuy(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
+  async canBuy(tbFactura: TbFactura, tbCliente: TbCliente): Promise<occur> {
 
-    var respuesta = new resultado(true, 'todo bien')
+    var respuesta = new occur(true, 'todo bien')
 
     const aCompras = [];
 
@@ -299,34 +259,34 @@ export class TbFacturaController {
     for (let index = 0; index < tbFactura.aCompras.length; index++) {
 
       var x = 0
-      const elementoCarrito: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
+      const cartElement: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
 
       const articulo = await this.tbArticuloRepository.find({
         where: {
-          _id: '' + elementoCarrito._id,
+          _id: '' + cartElement._id,
         },
       });
 
       if (articulo.length > 0) {
 
-        if (!((articulo[0].iCant - elementoCarrito.iCant) >= 0)) {
-          respuesta = new resultado(false, 'insuficiente stock');
+        if (!((articulo[0].iCant - cartElement.iCant) >= 0)) {
+          respuesta = new occur(false, 'insuficiente stock');
           break;
         }
-        if (!(elementoCarrito.iCant > 0)) {
-          respuesta = new resultado(false, 'cantidad de articulo inválida');
+        if (!(cartElement.iCant > 0)) {
+          respuesta = new occur(false, 'cantidad de articulo inválida');
           break;
 
         }
-        total = total + (articulo[0].iPrecio * (elementoCarrito.iCant <= 0 ? 1 : elementoCarrito.iCant));
-        articulo[0].iCant = elementoCarrito.iCant
+        total = total + (articulo[0].iPrecio * (cartElement.iCant <= 0 ? 1 : cartElement.iCant));
+        articulo[0].iCant = cartElement.iCant
         aCompras.push(articulo[0]);
 
       } else x++
 
       const receta = await this.tbRecetaRepository.find({
         where: {
-          _id: '' + elementoCarrito._id,
+          _id: '' + cartElement._id,
         },
       });
 
@@ -334,14 +294,14 @@ export class TbFacturaController {
 
         if (tbCliente.aRecetas !== undefined && tbCliente.aRecetas.indexOf(receta[0]._id + "") !== -1) {
 
-          respuesta = new resultado(false, 'esa receta ya está comprada');
+          respuesta = new occur(false, 'esa receta ya está comprada');
           break;
         }
-        total = total + elementoCarrito.iPrecio;
+        total = total + cartElement.iPrecio;
         aCompras.push(receta[0]);
       } else x++
 
-      if (x === 2) respuesta = new resultado(false, 'elemento no encontrado');
+      if (x === 2) respuesta = new occur(false, 'elemento no encontrado');
 
     }
 
@@ -362,31 +322,31 @@ export class TbFacturaController {
    * @returns resultado
    *
    */
-  async buy(tbFactura: TbFactura, tbCliente: TbCliente): Promise<resultado> {
+  async buy(tbFactura: TbFactura, tbCliente: TbCliente): Promise<occur> {
 
-    var respuesta = new resultado(true, 'todo bien')
+    var respuesta = new occur(true, 'todo bien')
 
 
     for (let index = 0; index < tbFactura.aCompras.length; index++) {
 
 
 
-      const elementoCarrito: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
+      const cartElement: TbArticulo = plainToClass(TbArticulo, tbFactura.aCompras[index]);
 
       const articulo = await this.tbArticuloRepository.find({
         where: {
-          _id: '' + elementoCarrito._id,
+          _id: '' + cartElement._id,
         },
       });
 
       if (articulo.length > 0) {
 
-        articulo[0].iCant = articulo[0].iCant - elementoCarrito.iCant;
+        articulo[0].iCant = articulo[0].iCant - cartElement.iCant;
         await this.tbArticuloRepository.updateById(articulo[0]._id, articulo[0])
       } else {
 
 
-        tbCliente.aRecetas?.push(elementoCarrito._id + '');
+        tbCliente.aRecetas?.push(cartElement._id + '');
         await this.tbClienteRepository.updateById(tbFactura.sCliente, tbCliente);
       }
 

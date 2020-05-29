@@ -1,6 +1,5 @@
 import {
   Count,
-  CountSchema,
   Filter,
   repository,
   Where,
@@ -10,40 +9,34 @@ import {
   param,
   get,
   getFilterSchemaFor,
-  getModelSchemaRef,
   getWhereSchemaFor,
   patch,
   put,
-  del,
   requestBody,
   HttpErrors,
-  RestBindings,
 } from '@loopback/rest';
 import { inject } from '@loopback/core';
 
 import { TbCliente, TbReceta } from '../models';
-import { TbClienteRepository, Credentials, TbRecetaRepository } from '../repositories';
+import { TbClienteRepository, Credentials, TbRecetaRepository, TbTokensRepository, TbHistorialRepository } from '../repositories';
 import { UserProfile } from '@loopback/security';
 
-//#region Mis imports
 
 import format = require('../Services/Format');
-import debug from 'debug';
 
 import { BcyptHasher } from '../Services/hash.password.bcrypt';
 import { MyClientService } from '../Services/client-service';
-import { MyMailService } from '../Services/sendMail';
+import { MyMailService } from '../Services/mail-service';
 
 import { CredentialsRequestBody } from './specs/client.controller.spec';
-import { JwtService } from '../Services/jwt-service';
 import {
   TokenServiceBindings,
   UserServiceBindings,
   PasswordHasherBindings,
-
+  TokenAction,
 
 } from '../keys';
-import { UserService, TokenService, authenticate, AuthenticationBindings, UserProfileFactory } from '@loopback/authentication';
+import { TokenService, authenticate, AuthenticationBindings } from '@loopback/authentication';
 import {
   TbClienteRequest,
   TbClienteResponses
@@ -51,11 +44,8 @@ import {
 
 const Responses: TbClienteResponses = new TbClienteResponses();
 const Request: TbClienteRequest = new TbClienteRequest();
-import { ok, err, Result, Err } from 'neverthrow'
-import { resultado } from '../Services/Result'
-
-//#endregion
-
+import { ok, err, Result } from 'neverthrow'
+import { constants } from './../authorization.constants'
 
 
 
@@ -65,12 +55,17 @@ export class TbClienteController {
     public tbRecetaRepository: TbRecetaRepository,
     @repository(TbClienteRepository)
     public tbClienteRepository: TbClienteRepository,
+
+    @repository(TbTokensRepository)
+    public tbTokensRepository: TbTokensRepository,
+
     @inject(PasswordHasherBindings.PASSWORD_HASHER)
     public hasher: BcyptHasher,
     @inject(UserServiceBindings.USER_SERVICE)
     public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
+
 
 
   ) { }
@@ -80,17 +75,21 @@ export class TbClienteController {
     @requestBody(Request.create)
     tbCliente: Omit<TbCliente, '_id'>,
   ): Promise<Result<TbCliente, Error>> {
-    const verificar = await format.isFine(tbCliente);
-    if (!verificar.valido) return err(new HttpErrors.UnprocessableEntity(verificar.incidente))
+
+    const verify = await format.isFine(tbCliente);
+    if (!verify.valid) return err(new HttpErrors.UnprocessableEntity(verify.incident))
     if ((await this.findbyCorreo(tbCliente.sCorreo)).length > 0) return err(new HttpErrors.UnprocessableEntity('Ese correo ya existe'))
     //esLint-disable-next-line require-atomic-updates
     tbCliente.sContrasena = await this.hasher.hashPassword(
       tbCliente.sContrasena,
     );
-    //tbCliente.aPermisos = [this.arrayPermissions.AccessAuthFeature];
-    //tbCliente.bActivo = false;
+    tbCliente.aPermisos = [constants.ArrayPermissions[constants.context.AccessAuthFeature][constants.context.AccessAuthFeature]];
+    tbCliente.bActivo = false;
     const saved = await this.tbClienteRepository.create(tbCliente);
-    //delete saved.sContrasena;
+    saved.sContrasena = '';
+
+
+    await new MyMailService().activate(tbCliente);
     return ok(saved);
   }
 
@@ -160,12 +159,6 @@ export class TbClienteController {
     await this.tbClienteRepository.replaceById(id, tbCliente);
   }
 
-  @del('/Cliente/{id}', Responses.deleteById)
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.tbClienteRepository.deleteById(id);
-  }
-
-
 
   async findbyCorreo(correo: string): Promise<TbCliente[]> {
     return await this.tbClienteRepository.find({
@@ -183,13 +176,20 @@ export class TbClienteController {
 
       console.log(credentials);
       const cliente = await this.clientService.verifyCredentials(credentials)//.catch(err=>{ return err(new Error('asd'))});
+      if (!cliente.bActivo) return err(new HttpErrors.Unauthorized('activa tu cuenta en el mensaje que te llega a tu correo'));
 
 
       const UserProfile = this.clientService.convertToUserProfile(cliente);
-
-
       const token = await this.jwtService.generateToken(UserProfile);
-      //delete cliente.sContrasena;
+
+      //registra el token
+      this.tbTokensRepository.create({
+        token: token,
+        sCliente: cliente._id,
+        iTipo: TokenAction.ACTION.login,
+      });
+
+      cliente.sContrasena = "";
 
 
 
@@ -199,6 +199,31 @@ export class TbClienteController {
     }
 
   }
+
+
+  @get('/Cliente/activar/token/{id}')
+  async activateAccount(
+    @param.path.string('id') token: string,
+  ): Promise<Result<string, Error>> {
+    try {
+      const userProfile = await this.jwtService.verifyToken(token)
+      const client = await this.clientService.UserProfileToTbCliente(userProfile);
+      client.bActivo = true
+      await this.tbClienteRepository.updateById(client._id, client);
+      var tbToken = await this.tbTokensRepository.find({
+        where: {
+          token: '' + token,
+        },
+      });
+      await this.tbTokensRepository.deleteById(tbToken[0]._id);
+    } catch (error) {
+      return error("algo paso " + error);
+    }
+
+
+    return ok("Su cuenta fue Activada Exitosamente");
+  }
+
 
 
   @get('/Cliente/token')
@@ -212,7 +237,6 @@ export class TbClienteController {
     /*if (!request.headers.authorization) {
       throw new HttpErrors.Unauthorized(`Authorization header not found.`);
     }*/
-    const UserProfile = await this.jwtService.verifyToken(token)
 
     return Promise.resolve(true);
   }

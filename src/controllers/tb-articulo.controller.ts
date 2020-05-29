@@ -158,20 +158,6 @@ export class TbArticuloController {
     }
   }
 
-  @del('/Articulo/{id}', Responses.deleteById)
-  @authenticate('jwt')
-  async deleteById(
-    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
-    @param.path.string('id') id: string): Promise<void> {
 
-    try {
-      if (await this.pass.isUnauthorized(constants.context.articulo, constants.action.deleteById, currentUser))
-        new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
-      await this.tbArticuloRepository.deleteById(id);
-      Promise.resolve;
-    } catch (error) {
-      Promise.reject;
-    }
-  }
 
 }

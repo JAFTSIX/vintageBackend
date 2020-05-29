@@ -24,70 +24,123 @@ import {
 } from '../bodies/tb-receta.responses';
 const Responses: TbRecetaResponses = new TbRecetaResponses();
 const Request: TbRecetaRequest = new TbRecetaRequest();
+
+
+import {
+  MyClientService
+} from '../Services/client-service';
+import {
+  inject
+} from '@loopback/core';
+import {
+  UserProfile
+} from '@loopback/security';
+import {
+  ok,
+  err,
+  Result
+} from 'neverthrow';
+import { Authorization } from '../Services/authorization'
+import {
+  TokenServiceBindings,
+  UserServiceBindings,
+
+} from '../keys';
+import {
+  TokenService,
+  authenticate,
+  AuthenticationBindings
+} from '@loopback/authentication';
+import { constants } from '../authorization.constants';
+
 export class TbRecetaController {
   constructor(
     @repository(TbRecetaRepository)
     public tbRecetaRepository: TbRecetaRepository,
+    @inject(UserServiceBindings.USER_SERVICE) public clientService: MyClientService,
+    @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService, //public jwtService: JwtService,
+    public pass: Authorization,
   ) { }
 
   @post('/Receta', Responses.create)
+  @authenticate('jwt')
   async create(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @requestBody(Request.create)
     tbReceta: Omit<TbReceta, '_id'>,
-  ): Promise<TbReceta> {
-    return this.tbRecetaRepository.create(tbReceta);
+  ): Promise<Result<TbReceta, Error>> {
+
+    if (await this.pass.isUnauthorized(constants.context.receta, constants.action.create, currentUser))
+      return err(new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación"));
+
+    return ok(await this.tbRecetaRepository.create(tbReceta));
+
   }
 
   @get('/Receta/count', Responses.count)
   async count(
     @param.query.object('where', getWhereSchemaFor(TbReceta)) where?: Where<TbReceta>,
-  ): Promise<Count> {
-    return this.tbRecetaRepository.count(where);
+  ): Promise<Result<Count, Error>> {
+
+    return ok(await this.tbRecetaRepository.count(where));
+
   }
 
   @get('/Receta', Responses.find)
   async find(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(TbReceta)) filter?: Filter<TbReceta>,
-  ): Promise<TbReceta[]> {
-    return this.tbRecetaRepository.find(filter);
+  ): Promise<Result<TbReceta[], Error>> {
+
+    return ok(await this.tbRecetaRepository.find(filter));
+
   }
 
+
   @patch('/Receta', Responses.updateAll)
+  @authenticate('jwt')
   async updateAll(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
     @requestBody(Request.updateAll)
     tbReceta: TbReceta,
     @param.query.object('where', getWhereSchemaFor(TbReceta)) where?: Where<TbReceta>,
-  ): Promise<Count> {
-    return this.tbRecetaRepository.updateAll(tbReceta, where);
+  ): Promise<Result<Count, Error>> {
+
+    if (await this.pass.isUnauthorized(constants.context.receta, constants.action.updateAll, currentUser))
+      return err(new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación"));
+
+    return ok(await this.tbRecetaRepository.updateAll(tbReceta, where));
   }
 
-  @get('/Receta/{id}', Responses.findById)
+
+  @get('/Receta/{id}', Responses.findById)//
+
   async findById(
     @param.path.string('id') id: string,
     @param.query.object('filter', getFilterSchemaFor(TbReceta)) filter?: Filter<TbReceta>
-  ): Promise<TbReceta> {
-    return this.tbRecetaRepository.findById(id, filter);
+  ): Promise<Result<TbReceta, Error>> {
+    return ok(await this.tbRecetaRepository.findById(id, filter));
   }
 
+
   @patch('/Receta/{id}', Responses.updateById)
+  @authenticate('jwt')
   async updateById(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
     @param.path.string('id') id: string,
     @requestBody(Request.updateById)
     tbReceta: TbReceta,
   ): Promise<void> {
-    await this.tbRecetaRepository.updateById(id, tbReceta);
+    try {
+      if (await this.pass.isUnauthorized(constants.context.receta, constants.action.updateById, currentUser)) Promise.reject;
+
+      await this.tbRecetaRepository.updateById(id, tbReceta);
+      Promise.resolve;
+    } catch (error) {
+      Promise.reject;
+    }
   }
 
-  @put('/Receta/{id}', Responses.replaceById)
-  async replaceById(
-    @param.path.string('id') id: string,
-    @requestBody() tbReceta: TbReceta,
-  ): Promise<void> {
-    await this.tbRecetaRepository.replaceById(id, tbReceta);
-  }
 
-  @del('/Receta/{id}', Responses.deleteById)
-  async deleteById(@param.path.string('id') id: string): Promise<void> {
-    await this.tbRecetaRepository.deleteById(id);
-  }
 }

@@ -54,7 +54,7 @@ export class TbClienteAdminController {
     tbCliente: Omit<TbCliente, '_id'>,
   ): Promise<Result<TbCliente, Error>> {
     const verificar = await Validar.isFine(tbCliente);
-    if (!verificar.valido) return err(new HttpErrors.UnprocessableEntity(verificar.incidente));
+    if (!verificar.valid) return err(new HttpErrors.UnprocessableEntity(verificar.incident));
 
     if ((await this
       .tbClienteRepository
