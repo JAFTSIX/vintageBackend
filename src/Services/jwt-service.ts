@@ -47,7 +47,7 @@ export class JwtService implements TokenService {
       );
     } catch (error) {
 
-      if (tbtoken[0].iTipo == TokenAction.ACTION.login && error.message === 'jwt expired') {
+      if (tbtoken[0].iTipo == TokenAction.ACTION.Login && error.message === 'jwt expired') {
         //anular token
         //borrar de la base de datos
         this.destroyToken(tbtoken[0]);

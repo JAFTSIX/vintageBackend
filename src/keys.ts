@@ -16,7 +16,7 @@ export namespace TokenServiceConstant {
 export namespace TokenAction {
   export enum ACTION {
 
-    login = 0,
+    Login = 0,
     recover = 1,
     Activate = 2,
 

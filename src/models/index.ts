@@ -7,3 +7,4 @@ export * from './tb-historial.model';
 export * from './tb-cliente.model';
 export * from './payment.model';
 export * from './tb-tokens.model';
+export * from './password.model';

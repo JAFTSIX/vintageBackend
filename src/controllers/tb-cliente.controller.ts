@@ -83,13 +83,24 @@ export class TbClienteController {
     tbCliente.sContrasena = await this.hasher.hashPassword(
       tbCliente.sContrasena,
     );
-    tbCliente.aPermisos = [constants.ArrayPermissions[constants.context.AccessAuthFeature][constants.context.AccessAuthFeature]];
+    tbCliente.aPermisos = [constants.ArrayPermissions[constants.context.AccessAuthFeature][constants.action.AccessAuthFeature]];
     tbCliente.bActivo = false;
     const saved = await this.tbClienteRepository.create(tbCliente);
     saved.sContrasena = '';
 
 
-    await new MyMailService().activate(tbCliente);
+    const UserProfile = this.clientService.convertToUserProfile(tbCliente);
+    const token = await this.jwtService.generateToken(UserProfile);
+
+
+    //registra el token
+    this.tbTokensRepository.create({
+      token: token,
+      sCliente: saved._id,
+      iTipo: TokenAction.ACTION.Activate,
+    });
+
+    await new MyMailService().activate(tbCliente, token);
     return ok(saved);
   }
 
@@ -186,7 +197,7 @@ export class TbClienteController {
       this.tbTokensRepository.create({
         token: token,
         sCliente: cliente._id,
-        iTipo: TokenAction.ACTION.login,
+        iTipo: TokenAction.ACTION.Login,
       });
 
       cliente.sContrasena = "";
@@ -212,6 +223,7 @@ export class TbClienteController {
       const client = await this.clientService.UserProfileToTbCliente(userProfile);
       client.bActivo = true
       await this.tbClienteRepository.updateById(client._id, client);
+
       var tbToken = await this.tbTokensRepository.find({
         where: {
           token: '' + token,
@@ -219,7 +231,7 @@ export class TbClienteController {
       });
       await this.tbTokensRepository.deleteById(tbToken[0]._id);
     } catch (error) {
-      return error("algo paso " + error);
+      return err(error)
     }
 
 

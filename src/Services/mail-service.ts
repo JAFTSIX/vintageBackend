@@ -30,18 +30,8 @@ export class MyMailService {
 
 
 
-  async activate(cliente: TbCliente) {
+  async activate(cliente: TbCliente, token: string) {
 
-
-    const UserProfile = this.clientService.convertToUserProfile(cliente);
-    const token = await this.jwtService.generateToken(UserProfile);
-
-    //registra el token
-    this.tbTokensRepository.create({
-      token: token,
-      sCliente: cliente._id,
-      iTipo: TokenAction.ACTION.Activate,
-    });
 
     var text = "http://localhost:3001/activar/token/" + token;
     //crear un token de activar
@@ -57,7 +47,22 @@ export class MyMailService {
 
   }
 
-  async Recover() {
+  async Recover(cliente: TbCliente, token: string) {
+
+
+    var text = "http://localhost:3001/Recuperar/token/" + token;
+    //crear un token de activar
+    //insertar como token de activar
+    //enviar al correo
+
+    await this.send({
+      from: 'chefnodemail@gmail.com',
+      to: cliente.sCorreo,
+      subject: 'Factura',
+      html: text,
+    })
+
+
 
   }
 

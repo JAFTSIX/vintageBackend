@@ -1,19 +1,14 @@
 import { Model, model, property } from '@loopback/repository';
 
-
 @model({ settings: { strict: false } })
-export class Payment extends Model {
+export class Password extends Model {
   @property({
-    type: 'object',
-    required: true,
-  })
-  Factura: object;
+    type: 'string',
 
-  @property({
-    type: "string",
+
     required: true,
   })
-  paymentMethodNonce: string;
+  pass: string;
 
   // Define well-known properties here
 
@@ -21,13 +16,13 @@ export class Payment extends Model {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [prop: string]: any;
 
-  constructor(data?: Partial<Payment>) {
+  constructor(data?: Partial<Password>) {
     super(data);
   }
 }
 
-export interface PaymentRelations {
+export interface PasswordRelations {
   // describe navigational properties here
 }
 
-export type PaymentWithRelations = Payment & PaymentRelations;
+export type PasswordWithRelations = Password & PasswordRelations;
