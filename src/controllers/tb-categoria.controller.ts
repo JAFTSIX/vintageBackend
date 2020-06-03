@@ -64,11 +64,11 @@ export class TbCategoriaController {
     @repository(TbCategoriaRepository) public tbCategoriaRepository: TbCategoriaRepository,
     @inject(UserServiceBindings.USER_SERVICE) public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService, //public jwtService: JwtService,
-    public pass: Authorization,
+
 
   ) { }
 
-
+  public pass: Authorization
 
   @post('/Categoria', Responses.create)
   @authenticate('jwt')
@@ -89,7 +89,8 @@ export class TbCategoriaController {
   @get('/Categoria/count', Responses.count)
   @authenticate('jwt')
   async count(
-    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUser: UserProfile,
     @param.query.object('where', getWhereSchemaFor(TbCategoria)) where?: Where<TbCategoria>,
 
   ): Promise<Result<Count, Error>> {

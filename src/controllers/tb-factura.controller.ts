@@ -78,10 +78,10 @@ export class TbFacturaController {
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,//public jwtService: JwtService,
     public btkeys: BrainTreeKeys = new BrainTreeKeys(),
-    public pass: Authorization,
+
   ) { }
 
-
+  public pass: Authorization
 
   private gateway: braintree.BraintreeGateway = connect({
     environment: Environment.Sandbox,

@@ -63,13 +63,14 @@ const Request: TbArticuloRequest = new TbArticuloRequest();
 
 export class TbArticuloController {
   constructor(
-    @repository(TbArticuloRepository) public tbArticuloRepository: TbArticuloRepository,
-    @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService,
-    public pass: Authorization,
+    @repository(TbArticuloRepository)
+    public tbArticuloRepository: TbArticuloRepository,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,
+
   ) { }
-
+  public pass: Authorization
   @post('/Articulo', Responses.create)
-
   @authenticate('jwt')
   async create(
     @requestBody(Request.create) tbArticulo: Omit<TbArticulo, '_id'>,
@@ -96,11 +97,25 @@ export class TbArticuloController {
     return ok(await this.tbArticuloRepository.count(where));
   }
 
-  @get('/Articulo', Responses.find)
+  @get('/Articulo', {
+    responses: {
+      '200': {
+        description: 'Array of TbArticulo model instances',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'array',
+              items: getModelSchemaRef(TbArticulo, { includeRelations: true }),
+            },
+          },
+        },
+      },
+    },
+  })
   async find(
     @param.query.object('filter', getFilterSchemaFor(TbArticulo)) filter?: Filter<TbArticulo>,
-  ): Promise<Result<TbArticulo[], Error>> {
-    return ok(await this.tbArticuloRepository.find(filter));
+  ): Promise<TbArticulo[]> {
+    return await this.tbArticuloRepository.find(filter);
   }
 
   @patch('/Articulo', Responses.updateAll)

@@ -8,25 +8,10 @@
 import { getTestMessageUrl, createTransport, Transporter } from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer';
 import { TbFactura, TbCliente, TbArticulo } from '../models';
-import {
-  TokenAction, UserServiceBindings, TokenServiceBindings,
 
-} from '../keys';
-import { TbTokensRepository } from '../repositories';
-import { MyClientService } from '../Services/client-service';
-import { repository } from '@loopback/repository';
-import { inject } from '@loopback/core';
-import { TokenService } from '@loopback/authentication';
 
 export class MyMailService {
 
-
-  @repository(TbTokensRepository)
-  public tbTokensRepository: TbTokensRepository;
-  @inject(UserServiceBindings.USER_SERVICE)
-  public clientService: MyClientService;
-  @inject(TokenServiceBindings.TOKEN_SERVICE)
-  public jwtService: TokenService;//public jwtService: JwtService,
 
 
 
