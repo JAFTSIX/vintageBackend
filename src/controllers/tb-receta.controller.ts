@@ -49,7 +49,7 @@ import {
 import {
   TokenService,
   authenticate,
-  AuthenticationBindings
+  AuthenticationBindings,
 } from '@loopback/authentication';
 import { constants } from '../authorization.constants';
 
@@ -59,7 +59,6 @@ export class TbRecetaController {
     public tbRecetaRepository: TbRecetaRepository,
     @inject(UserServiceBindings.USER_SERVICE) public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService, //public jwtService: JwtService,
-
   ) { }
   public pass: Authorization
 
@@ -90,7 +89,6 @@ export class TbRecetaController {
 
   @get('/Receta', Responses.find)
   async find(
-    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
     @param.query.object('filter', getFilterSchemaFor(TbReceta)) filter?: Filter<TbReceta>,
   ): Promise<Result<TbReceta[], Error>> {
 
@@ -116,7 +114,6 @@ export class TbRecetaController {
 
 
   @get('/Receta/{id}', Responses.findById)//
-
   async findById(
     @param.path.string('id') id: string,
     @param.query.object('filter', getFilterSchemaFor(TbReceta)) filter?: Filter<TbReceta>
