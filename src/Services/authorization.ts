@@ -9,12 +9,12 @@ import {
 
 export class Authorization {
 
-  constructor(@inject(UserServiceBindings.USER_SERVICE) public clientService: MyClientService,) { }
+  constructor(public clientService: MyClientService) { }
 
 
 
 
-  async isUnauthorized(context: number, action: number, currentUser: UserProfile): Promise<boolean> {
+  public async isUnauthorized(context: number, action: number, currentUser: UserProfile): Promise<boolean> {
     var cliente: TbCliente = await this.clientService.UserProfileToTbCliente(currentUser);
     if (!cliente.bAdmin ||
       cliente.aPermisos === undefined ||

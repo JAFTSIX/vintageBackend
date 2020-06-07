@@ -60,7 +60,7 @@ export class TbRecetaController {
     @inject(UserServiceBindings.USER_SERVICE) public clientService: MyClientService,
     @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService, //public jwtService: JwtService,
   ) { }
-  public pass: Authorization
+  public pass: Authorization = new Authorization(this.clientService);
 
   @post('/Receta', Responses.create)
   @authenticate('jwt')
