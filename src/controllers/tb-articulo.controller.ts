@@ -58,8 +58,10 @@ import {
 
 const Responses: TbArticuloResponses = new TbArticuloResponses();
 const Request: TbArticuloRequest = new TbArticuloRequest();
-
-
+import {
+  MyClientService
+} from '../Services/client-service';
+import { UserServiceBindings, } from '../keys';
 
 export class TbArticuloController {
   constructor(
@@ -67,9 +69,9 @@ export class TbArticuloController {
     public tbArticuloRepository: TbArticuloRepository,
     @inject(TokenServiceBindings.TOKEN_SERVICE)
     public jwtService: TokenService,
-
+    @inject(UserServiceBindings.USER_SERVICE) public clientService: MyClientService,
   ) { }
-  public pass: Authorization
+  public pass: Authorization = new Authorization(this.clientService);
   @post('/Articulo', Responses.create)
   @authenticate('jwt')
   async create(

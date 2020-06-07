@@ -81,7 +81,7 @@ export class TbFacturaController {
 
   ) { }
 
-  public pass: Authorization
+  public pass: Authorization = new Authorization(this.clientService);
 
   private gateway: braintree.BraintreeGateway = connect({
     environment: Environment.Sandbox,

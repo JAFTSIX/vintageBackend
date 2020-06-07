@@ -59,7 +59,7 @@ export class TbHistorialController {
     @inject(TokenServiceBindings.TOKEN_SERVICE) public jwtService: TokenService, //public jwtService: JwtService,
 
   ) { }
-  public pass: Authorization
+  public pass: Authorization = new Authorization(this.clientService);
   @post('/Historial', Responses.create)
   async create(
     @requestBody(Request.create)

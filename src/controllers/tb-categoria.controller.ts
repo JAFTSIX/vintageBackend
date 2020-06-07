@@ -68,7 +68,7 @@ export class TbCategoriaController {
 
   ) { }
 
-  public pass: Authorization
+  public pass: Authorization = new Authorization(this.clientService);
 
   @post('/Categoria', Responses.create)
   @authenticate('jwt')
