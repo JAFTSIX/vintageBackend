@@ -199,9 +199,10 @@ export class TbCategoriaController {
   ): Promise<void> {
     try {
 
-
+      console.log(constants.context.categoria, constants.action.deleteById);
       if (await this.pass.isUnauthorized(constants.context.categoria, constants.action.deleteById, currentUser))
         throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
+
       await this.tbCategoriaRepository.deleteById(id);
       Promise.resolve;
     } catch (error) {
