@@ -9,7 +9,7 @@ import { JwtService } from './Services/jwt-service';
 
 export namespace TokenServiceConstant {
   export const TOKEN_SECRET_VALUE = '1234asdf';
-  export const TOKEN_EXPIRES_IN_VALUE = '6h';
+  export const TOKEN_EXPIRES_IN_VALUE = '24h';
 }
 
 

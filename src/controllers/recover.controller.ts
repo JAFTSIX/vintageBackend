@@ -129,7 +129,7 @@ export class RecoverController {
     password: Password,
   ): Promise<Result<string, Error>> {
 
-    token = token.split(' ')[1]
+
 
     try {
 
@@ -143,16 +143,17 @@ export class RecoverController {
           token: '' + token,
         },
       });
-      if (tbToken[0].iTipo != TokenAction.ACTION.recover) return ok("tipo de token incorrecto")
-      client.sContrasena = await this.hasher.hashPassword(password.pass
-        ,
-      );
+      if (tbToken[0].iTipo != TokenAction.ACTION.recover) return ok("tipo de token incorrecto");
+
+      //esLint-disable-next-line require-atomic-updates
+      client.sContrasena = await this.hasher.hashPassword(password + '');
 
 
       await this.tbClienteRepository.updateById(client._id, client);
+
       await this.tbTokensRepository.deleteById(tbToken[0]._id);
     } catch (error) {
-      return error(error);
+      return err(error);
     }
 
 
