@@ -132,17 +132,20 @@ export class RecoverController {
 
 
     try {
-
-      const userProfile = await this.jwtService.verifyToken(token).catch(() => { return undefined })
-      if (userProfile === undefined) return ok("token incorrecto o expirado solicite renovación de contraseña nuevamente");
-      const client = await this.clientService.UserProfileToTbCliente(userProfile);
-
-
       var tbToken = await this.tbTokensRepository.find({
         where: {
           token: '' + token,
         },
       });
+      const userProfile = await this.jwtService.verifyToken(token).catch(() => { return undefined })
+      if (userProfile === undefined) {
+
+        await this.tbTokensRepository.deleteById(tbToken[0]._id);
+        return ok("token incorrecto o expirado solicite renovación de contraseña nuevamente");
+      }
+      const client = await this.clientService.UserProfileToTbCliente(userProfile);
+
+
       if (tbToken[0].iTipo != TokenAction.ACTION.recover) return ok("tipo de token incorrecto");
 
       //esLint-disable-next-line require-atomic-updates
