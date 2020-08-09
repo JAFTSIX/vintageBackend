@@ -11,6 +11,7 @@
     "node": ">=8.9"
   },
   "scripts": {
+    "heroku-postbuild": "npm run build",
     "build": "lb-tsc",
     "build:watch": "lb-tsc --watch",
     "clean": "lb-clean dist *.tsbuildinfo",
