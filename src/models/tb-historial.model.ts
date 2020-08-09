@@ -17,19 +17,19 @@ export class TbHistorial extends Entity {
 
   @property({
     type: 'boolean',
-    required: true,
+
   })
   bMinTest: boolean;
 
   @property({
     type: 'number',
-    required: true,
+
   })
   iDuracion: number;
 
   @property({
     type: 'string',
-    required: true,
+
   })
   sCliente: string;
 

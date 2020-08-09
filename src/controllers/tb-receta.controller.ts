@@ -140,5 +140,25 @@ export class TbRecetaController {
     }
   }
 
+  @del('/Receta/{id}', Responses.deleteById)
+  @authenticate('jwt')
+  async deleteById(
+    @inject(AuthenticationBindings.CURRENT_USER) currentUser: UserProfile,
+    @param.path.string('id') id: string
+  ): Promise<void> {
+    try {
+
+      console.log(constants.context.categoria, constants.action.deleteById);
+      if (await this.pass.isUnauthorized(constants.context.receta, constants.action.deleteById, currentUser))
+        throw new HttpErrors.Unauthorized("permisos insuficientes para realizar esta operación");
+
+      await this.tbRecetaRepository.deleteById(id);
+      Promise.resolve;
+    } catch (error) {
+      Promise.reject;
+      console.log(error);
+    }
+
+  }
 
 }
